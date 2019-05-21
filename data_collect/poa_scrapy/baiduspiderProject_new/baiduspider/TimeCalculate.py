@@ -2,7 +2,7 @@ import time
 import datetime
 def time_calculate(time,origin):
 
-    if origin=='sbaidu':
+    if origin=='baidu':
        if time.find(':')!=-1:
            time = str(datetime.datetime.now().strftime('%Y-%m-%d'))+" "+time
            return time+':00'

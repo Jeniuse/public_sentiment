@@ -10,10 +10,15 @@ import scrapy
 
 class BaiduspiderItem(scrapy.Item):
     # define the fields for your item here like:
+    # 标题
     title = scrapy.Field()
+    # 内容
     info = scrapy.Field()
+    # 时间
     time = scrapy.Field()
-    UrlId = scrapy.Field()
-    childPage = scrapy.Field()
-    IsLimitedTime = scrapy.Field()#是否超过时间限制
-    #读取帖子内容的属性
+    # 网址
+    url = scrapy.Field()
+    # 帖子id
+    urlId = scrapy.Field()
+    # 是否符合条件（包括时间范围）
+    IsFilter = scrapy.Field()
