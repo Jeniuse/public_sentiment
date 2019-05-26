@@ -8,7 +8,7 @@ def time_March(dataT,default_scope_day):
         splits = dataT.split("-")
         if(dataT.count('-')==2):
             time = datetime.datetime(int(splits[0]), int(splits[1]), int(splits[2].split(' ')[0]))
-        if(dataT.count('-')==1):
+        elif(dataT.count('-')==1):
             time = datetime.datetime(int(splits[0]), int(splits[1]),15)
         deltatime = (datetime.datetime.now() - time).days
         if(deltatime<default_scope_day):#如果时限小于一年
