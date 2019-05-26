@@ -5,7 +5,7 @@ from lxml import etree
 import time
 from baiduspider.items import BaiduspiderItem
 from .. import TimeMarch
-from .. import ChildPage
+from ..child_page import child_page
 from .. import read_json
 # 国家广播电视总局
 class hhtcsSpider(scrapy.Spider):
@@ -45,8 +45,8 @@ class hhtcsSpider(scrapy.Spider):
                     timecount = timecount + 1
             except:
                 item['IsFilter'] = False
-            res = etree.HTML(requests.get(item["url"]).content)
-            item["info"] = res.xpath("//p/text()")
+            res_child = child_page(item["url"])
+            item["info"] = res_child.xpath("//p/text()")
             item["info"] = "".join(item["info"])
             yield item
         print('\n第***********************************%d***********************************页\n'%self.page_num)
