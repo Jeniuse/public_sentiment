@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 import scrapy
-import requests
-from lxml import etree
 import time
 from baiduspider.items import BaiduspiderItem
 from .. import TimeMarch
