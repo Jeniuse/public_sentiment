@@ -59,9 +59,9 @@ class BaiduspiderPipeline(object):
     def close_spider(self,spider):
         self.urlList = self.templist
         #将数据写入文件
-        self.changeUrlListFile(self.urlList,spider.name)
+        # self.changeUrlListFile(self.urlList,spider.name)
         #将差值列表存入josn
-        self.write_file("./jsonfile/%s_DeltaList.json"%spider.name,self.deltaList)
+        # self.write_file("./jsonfile/%s_DeltaList.json"%spider.name,self.deltaList)
         #关闭爬虫时将数据写入消息队列
         self.kafka_input(self.informList,spider.name)
 
@@ -120,7 +120,7 @@ class BaiduspiderPipeline(object):
             fp.write('\n')
 
     def kafka_input(self,infoList,origin):
-        if len(infoList) == 0:
+        if len(infoList) != 0:
             for info in infoList:
                 self.Kafka_fun(info, origin)
         else:
