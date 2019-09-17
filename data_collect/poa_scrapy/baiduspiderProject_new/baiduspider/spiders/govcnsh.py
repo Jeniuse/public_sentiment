@@ -27,6 +27,7 @@ class hhtcsSpider(scrapy.Spider):
         item['IsFilter'] = False
         timecount = 0  # 计数器
         for node in nodelist:#分析帖子信息
+            item['spidertime'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
             item["title"] = node.xpath("./a/text()").extract()
             item["title"] = "".join(item["title"])
             item["url"] = node.xpath("./a/@href").extract_first()

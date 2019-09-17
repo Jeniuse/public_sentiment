@@ -12,7 +12,8 @@ class hhtcsSpider(scrapy.Spider):
     allowed_domains = ['gbdsj.nmg.gov.cn']
     start_urls = [
         "http://gbdsj.nmg.gov.cn/?m=search&c=index&a=init&typeid=1&siteid=1&q=%s&page=1"%"直播卫星",
-        "http://gbdsj.nmg.gov.cn/?m=search&c=index&a=init&typeid=1&siteid=1&q=%s&page=1"%"中星九号"
+        "http://gbdsj.nmg.gov.cn/?m=search&c=index&a=init&typeid=1&siteid=1&q=%s&page=1"%"中星九号",
+        "http://gbdsj.nmg.gov.cn/?m=search&c=index&a=init&typeid=1&siteid=1&q=%s&page=1" % "扶贫工程"
     ]
     allowed_timesup = 10  # 最多超过时限次数
     if(read_json.read_json(name)):
@@ -28,16 +29,17 @@ class hhtcsSpider(scrapy.Spider):
         item['IsFilter'] = False
         timecount = 0  # 计数器
         for node in nodelist:#分析帖子信息
-            item["title"] = node.xpath("./div/h5/a").extract()
-            item["title"] = xml_filter("".join(item["title"]))
-            item["url"] = node.xpath("./div/h5/a/@href").extract_first()
-            item["urlId"] = item["url"].split('=')[-1]
-            item["urlId"] = '%s_%s'%(self.name,item["urlId"])
-            item['info'] = node.xpath("//li[@class='wrap']/div/p").extract()
-            item["info"] = xml_filter("".join(item["info"]))
-            item["time"] = node.xpath("./div[@class='adds']/text()").extract_first()
-            item["time"] = item["time"].split('：')[1]
             try:
+                item['spidertime'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
+                item["title"] = node.xpath("./div/h5/a").extract()
+                item["title"] = xml_filter("".join(item["title"]))
+                item["url"] = node.xpath("./div/h5/a/@href").extract_first()
+                item["urlId"] = item["url"].split('=')[-1]
+                item["urlId"] = '%s_%s' % (self.name, item["urlId"])
+                item['info'] = node.xpath("//li[@class='wrap']/div/p").extract()
+                item["info"] = xml_filter("".join(item["info"]))
+                item["time"] = node.xpath("./div[@class='adds']/text()").extract_first()
+                item["time"] = item["time"].split('：')[1]
                 # 判断这个帖子是否符合时间
                 if TimeMarch.time_March(item["time"],self.default_scope_day):
                     item["IsFilter"] = True

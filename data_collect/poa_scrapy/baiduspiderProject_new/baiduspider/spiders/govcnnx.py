@@ -53,6 +53,7 @@ class hhtcsSpider(scrapy.Spider):
         # 是否符合爬取条件
         item['IsFilter'] = False
         try:
+            item['spidertime'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
             item["title"] = response.xpath("//tr/td/font/text()").extract_first()
             item["url"] = response.url
             item["urlId"] = item["url"].split('id=')[1]

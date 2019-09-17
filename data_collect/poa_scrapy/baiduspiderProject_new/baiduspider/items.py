@@ -22,3 +22,14 @@ class BaiduspiderItem(scrapy.Item):
     urlId = scrapy.Field()
     # 是否符合条件（包括时间范围）
     IsFilter = scrapy.Field()
+    # 评论数
+    comment = scrapy.Field()
+    # 阅读数
+    read = scrapy.Field()
+    # 点赞数
+    like = scrapy.Field()
+    # 爬取时间
+    spidertime = scrapy.Field()
+    # 最新评论时间
+    latestcomtime = scrapy.Field()
+
