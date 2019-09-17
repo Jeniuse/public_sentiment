@@ -38,10 +38,7 @@ class hhtcsSpider(scrapy.Spider):
                 item["urlId"] = '%s_%s' % (self.name, item["urlId"])
                 item["time"] = node.xpath("./div[2]/div/span[2]/text()").extract_first()
                 item["time"] = item["time"].split('：')[-1]
-
-                print(item["url"])
                 res_child = child_page(item["url"])
-                print(res_child)
                 # item["info"] = res_child.xpath("//div[@id='j-show-body']/div/div/p/span/voice/text()")
                 item["info"] = res_child.xpath("//span/text()")
                 item["info"] = "".join(item["info"])
