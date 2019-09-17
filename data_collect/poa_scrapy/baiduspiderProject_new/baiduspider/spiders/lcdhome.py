@@ -32,12 +32,19 @@ class hhtcsSpider(scrapy.Spider):
         item['IsFilter'] = False
         timecount = 0  # 计数器
         for node in nodelist:#分析帖子信息
+            item['spidertime'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
             item["title"] = node.xpath("./td[@class='subject']/a/b/font/text() | ./td[@class='subject']/a/text()").extract_first()
             item["url"] = node.xpath("./td[@class='subject']/a/@href").extract_first()
             item["urlId"] = item["url"].split('-')[-1].split('.')[0]
             item["urlId"] = '%s_%s'%(self.name,item["urlId"])
             item["url"] = 'http://bbs.lcdhome.net/%s'%item["url"]
             item["time"] = node.xpath("./td[@class='author'][1]/p/text()").extract_first()
+            item["read"] = node.xpath("./td[@class='num']/text()").extract_first()
+            item["comment"] = node.xpath("./td[@class='num']/em/text()").extract_first()
+            item["read"] = item["read"].split('/')[-1]
+            item["latestcomtime"] = node.xpath("./td[5]/a/@title").extract_first()
+            if item["read"] == "\xa0":
+                item["read"] = None
             try:
                 reply = int(node.xpath("./td[@class='num']/text()").extract_first()[1:])
             except:
@@ -61,6 +68,6 @@ class hhtcsSpider(scrapy.Spider):
         self.page_num = self.page_num + 1
         if (len(nodelist)!=0) and (timecount<self.allowed_timesup) and (self.page_num<=self.page_all_num):
             NextPageUrl = "http://bbs.lcdhome.net/thread-htm-fid-75-page-%s.html"%str(self.page_num)
-            yield scrapy.Request(NextPageUrl,callback = self.parse)
+            yield scrapy.Request(NextPageUrl,callback = self.parse,dont_filter=True)
         else:
             self.crawler.engine.close_spider(self, 'Finished') # 关闭爬虫

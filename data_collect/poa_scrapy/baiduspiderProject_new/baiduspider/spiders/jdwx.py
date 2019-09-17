@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import scrapy
+import time
 import datetime
 from baiduspider.items import BaiduspiderItem
 from .. import TimeCalculate
@@ -21,21 +22,25 @@ class jdwxbzSpider(scrapy.Spider):
         default_scope_day = 30 #增量爬取时限
 
     def parse(self, response):
-        nodelist = response.xpath('//tbody/tr/th')#得到一页中的所有帖子
+        nodelist = response.xpath('//tbody/tr')#得到一页中的所有帖子
         item = BaiduspiderItem()
         isHasContent = False  # 判断此页中是否有合适的信息
         NextPageUrl = ''
         timecount = 0  # 计数器
         for node in nodelist:#分析帖子信息\
-            childUrl = node.xpath("./a[2][@class='s xst']/@href").extract_first()
-            item["title"]= node.xpath("./a[2][@class='s xst']/text()").extract_first()
-            item["url"] = node.xpath("./a[2][@class='s xst']/@href").extract_first()
+            item['spidertime'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
+            childUrl = node.xpath("./th/a[2][@class='s xst']/@href").extract_first()
+            item["title"]= node.xpath("./th/a[2][@class='s xst']/text()").extract_first()
+            item["url"] = node.xpath("./th/a[2][@class='s xst']/@href").extract_first()
+            item["read"] = node.xpath("./td[3][@class='num']/em/text()").extract_first()
+            item["comment"] = node.xpath("./td[3][@class='num']/a/text()").extract_first()
+            item["latestcomtime"] = node.xpath("//tbody/tr/td[4]/em/a/span/@title | //tbody/tr/td[4]/em/a/text()").extract_first()
             if (childUrl != None):
                 item["info"] = ChildPage.ChildPage(childUrl,'2')
-            item["time"] = node.xpath('./a[2]/../../td[@class="by"]/em/span/text()').extract_first()
+            item["time"] = node.xpath('./th/a[2]/../../td[@class="by"]/em/span/text()').extract_first()
 
             if item["time"] == None:
-                item["time"] = node.xpath('./a[2]/../../td[@class="by"]/em/span/span/text()').extract_first()
+                item["time"] = node.xpath('./th/a[2]/../../td[@class="by"]/em/span/span/text()').extract_first()
             #处理时间为空的情况
             if item["time"] == None:
                 item["time"] = ''

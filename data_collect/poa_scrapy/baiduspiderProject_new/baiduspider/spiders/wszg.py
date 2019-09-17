@@ -6,6 +6,7 @@ from .. import TimeMarch
 from .. import ChildPage
 from .. import read_json
 from .. import read_file
+import time
 
 class wszgcsSpider(scrapy.Spider):
     name = 'wszg'
@@ -14,7 +15,8 @@ class wszgcsSpider(scrapy.Spider):
         "https://www.wszgw.net/forum.php?mod=forumdisplay&fid=232",
         "https://www.wszgw.net/forum-296-1.html",
         "https://www.wszgw.net/forum-232-1.html",
-        "https://www.wszgw.net/forum-203-1.html"
+        "https://www.wszgw.net/forum-203-1.html",
+        "https://www.wszgw.net/forum-235-1.html"
     ]
     idlist = read_file.read_file(name)
     allowed_timesup = 10  # 最多超过时限次数
@@ -24,14 +26,15 @@ class wszgcsSpider(scrapy.Spider):
         default_scope_day = 30  # 增量爬取时限
 
     def parse(self, response):
-        nodelist = response.xpath('//tbody/tr/th')#得到一页中的所有帖子
+        nodelist = response.xpath('//tbody/tr')#得到一页中的所有帖子
         item = BaiduspiderItem()
         isHasContent = False  # 判断此页中是否有合适的信息
         NextPageUrl = ''
         timecount = 0  # 计数器
         for node in nodelist:#分析帖子信息
             #首判断是否符合时间限制
-            item["time"] = node.xpath('./a[2]/../../td[2]/em//text()').extract_first()
+            item['spidertime'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
+            item["time"] = node.xpath('./th/a[2]/../../td[2]/em//text()').extract_first()
             # 处理时间为空的情况
             if item["time"] == None:
                 item["time"]=''
@@ -42,10 +45,13 @@ class wszgcsSpider(scrapy.Spider):
             else:
                 item["IsFilter"] = False
                 timecount = timecount + 1
-            item["title"] = node.xpath("./a[2][@class='s xst']/text()").extract_first()
-            item["url"] = node.xpath("./a[2][@class='s xst']/@href").extract_first()
+            item["title"] = node.xpath("./th/a[2][@class='s xst']/text()").extract_first()
+            item["url"] = node.xpath("./th/a[2][@class='s xst']/@href").extract_first()
+            item["read"] = node.xpath("./td[3][@class='num']/em/text()").extract_first()
+            item["comment"] = node.xpath("./td[3][@class='num']/a/text()").extract_first()
+            item["latestcomtime"] = node.xpath("./td[4]/em/a/text() | ./td[4]/em/a/span/@title").extract_first()
             if(item["IsFilter"] == True):#如果符合时间限制的话
-                childUrl = node.xpath("./a[2][@class='s xst']/@href").extract_first()
+                childUrl = node.xpath("./th/a[2][@class='s xst']/@href").extract_first()
                 if (childUrl != None):#判断是否已经爬过,决定是否访问子页面
                     id = item['url'].split('/')[3]  # 得到url
                     num = id.split('-')[1]
