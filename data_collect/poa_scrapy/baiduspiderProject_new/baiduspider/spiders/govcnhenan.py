@@ -2,6 +2,7 @@
 import scrapy
 import time
 from baiduspider.items import BaiduspiderItem
+from baiduspider.items import inititem
 from .. import TimeMarch
 from ..child_page import child_page
 from .. import read_json
@@ -24,6 +25,7 @@ class hhtcsSpider(scrapy.Spider):
         nodelist = response.xpath("//div[@class='articleList_listBox']/a")#得到一页中的所有帖子
         nodelist = [] if nodelist==None else nodelist
         item = BaiduspiderItem()
+        item = inititem(item)
         # 是否符合爬取条件
         item['IsFilter'] = False
         timecount = 0  # 计数器
@@ -42,7 +44,7 @@ class hhtcsSpider(scrapy.Spider):
                     item["IsFilter"] = False
                     timecount = timecount + 1
                 res_child = child_page(item["url"])
-                item["info"] = res_child.xpath("//div[@class='article_body']//p/text() | //div[@class='article_body']//p/span/text() | //div[@class='article_body']//p/span/font/text()")
+                item["info"] = res_child.xpath("//div[@class='article_body']//p/span/text()")
                 item["info"] = "".join(item["info"])
             except:
                 item['IsFilter'] = False

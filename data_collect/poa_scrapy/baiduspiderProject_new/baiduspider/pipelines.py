@@ -95,6 +95,7 @@ class BaiduspiderPipeline(object):
             pstmt['COMMENT_SIZE']=item['comment']
             pstmt['FETCH_TIME']=item['spidertime']
             pstmt['LAST_UPDATE_TIME']=item['latestcomtime']
+            pstmt['THUMBSUP_SIZE'] = None
             # 分词---begin
             se = '%s。%s'%(item['title'],item['info']) # 得到标题和内容
             res_part = jieba.lcut_for_search(se) # 分词后返回list

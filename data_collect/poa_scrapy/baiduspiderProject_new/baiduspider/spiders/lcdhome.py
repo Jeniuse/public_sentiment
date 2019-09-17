@@ -4,6 +4,7 @@ import requests
 from lxml import etree
 import time
 from baiduspider.items import BaiduspiderItem
+from baiduspider.items import inititem
 from .. import TimeMarch
 from ..child_page import child_page
 from .. import read_json
@@ -28,6 +29,7 @@ class hhtcsSpider(scrapy.Spider):
             pages = response.xpath("//div[@class='pages']")[0].xpath("./div[@class='fl']/text()").extract_first()
             self.page_all_num = int(pages[1:-1])
         item = BaiduspiderItem()
+        item = inititem(item)
         # 是否符合爬取条件
         item['IsFilter'] = False
         timecount = 0  # 计数器

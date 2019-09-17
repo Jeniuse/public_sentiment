@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import scrapy
 from baiduspider.items import BaiduspiderItem
+from baiduspider.items import inititem
 from .. import TimeCalculate
 from .. import TimeMarch
 from .. import ChildPage
@@ -28,6 +29,7 @@ class wszgcsSpider(scrapy.Spider):
     def parse(self, response):
         nodelist = response.xpath('//tbody/tr')#得到一页中的所有帖子
         item = BaiduspiderItem()
+        item = inititem(item)
         isHasContent = False  # 判断此页中是否有合适的信息
         NextPageUrl = ''
         timecount = 0  # 计数器

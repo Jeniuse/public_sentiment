@@ -2,6 +2,7 @@
 import scrapy
 import time
 from baiduspider.items import BaiduspiderItem
+from baiduspider.items import inititem
 from .. import TimeMarch
 from .. import read_json
 # 宁夏广播电视局
@@ -21,7 +22,6 @@ class hhtcsSpider(scrapy.Spider):
     def parse(self, response):
         nodelist = response.xpath("//table/tr")#得到一页中的所有帖子
         nodelist = [] if nodelist==None else nodelist
-        print(len(nodelist))
         timecount = 0
         for node in nodelist:#分析帖子信息
             url = node.xpath("./td[2]/a/@href").extract_first()
@@ -50,6 +50,7 @@ class hhtcsSpider(scrapy.Spider):
             self.crawler.engine.close_spider(self, 'Finished') # 关闭爬虫
     def child_page(self, response):
         item = BaiduspiderItem()
+        item = inititem(item)
         # 是否符合爬取条件
         item['IsFilter'] = False
         try:

@@ -2,6 +2,7 @@
 import scrapy
 import time
 from baiduspider.items import BaiduspiderItem
+from baiduspider.items import inititem
 from .. import TimeMarch
 from ..child_page import child_page
 from .. import read_json
@@ -25,6 +26,7 @@ class hhtcsSpider(scrapy.Spider):
         nodelist = response.xpath("//td[@class = 'td_left30_right30']/table/tr/td")#得到一页中的所有帖子
         nodelist = [] if nodelist==None else nodelist
         item = BaiduspiderItem()
+        item = inititem(item)
         # 是否符合爬取条件
         item['IsFilter'] = False
         timecount = 0  # 计数器
