@@ -91,6 +91,10 @@ class BaiduspiderPipeline(object):
             pstmt['OCCUR_TIME']=item['time']
             pstmt['ORIGIN_VALUE']='500010000000001'
             pstmt['ORIGIN_NAME']='论坛'
+            pstmt['BROWSE_SIZE']=item['read']
+            pstmt['COMMENT_SIZE']=item['comment']
+            pstmt['FETCH_TIME']=item['spidertime']
+            pstmt['LAST_UPDATE_TIME']=item['latestcomtime']
             # 分词---begin
             se = '%s。%s'%(item['title'],item['info']) # 得到标题和内容
             res_part = jieba.lcut_for_search(se) # 分词后返回list

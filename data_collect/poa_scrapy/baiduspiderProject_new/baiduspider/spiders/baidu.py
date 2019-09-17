@@ -32,6 +32,7 @@ class SimpleBaiduSpider(scrapy.Spider):
             try:
                 item['spidertime'] = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
                 doc = doc.split("回复",1)[1]
+                item['read'] = None
                 item["comment"] = doc.split('>',1)[1].split('<',1)[0]
                 url = doc.split("href=\"",1)[1].split('\"',1)[0]
                 item["url"] = "https://tieba.baidu.com%s" % url
