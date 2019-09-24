@@ -6,7 +6,7 @@ from baiduspider.items import inititem
 from .. import TimeMarch
 from ..child_page import child_page
 from .. import read_json
-# 山西省广播电视局
+# 河北省广播电视局
 class hhtcsSpider(scrapy.Spider):
     name = 'govcnheb'
     allowed_domains = ['www.hbcbgd.gov.cn']

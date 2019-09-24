@@ -8,7 +8,7 @@ from ..child_page import child_page
 from .. import read_json
 import ast
 import json
-# 山西省广播电视局
+# 广东省广播电视局
 class hhtcsSpider(scrapy.Spider):
     name = 'govcngd'
     allowed_domains = ['gbdsj.gd.gov.cn/']

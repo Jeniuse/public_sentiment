@@ -22,7 +22,7 @@ class hhtcsSpider(scrapy.Spider):
         default_scope_day = 30 #增量爬取时限
 
     def parse(self, response):
-        nodelist = response.xpath("/html/body/div[4]/div[3]/div")#得到一页中的所有帖子
+        nodelist = response.xpath("//div[@style='background:#FFF;padding:5px;width:100%']")#得到一页中的所有帖子
         nodelist = [] if nodelist==None else nodelist
         item = BaiduspiderItem()
         item = inititem(item)
@@ -39,6 +39,9 @@ class hhtcsSpider(scrapy.Spider):
                 item["urlId"] = item["url"].split('id=')[-1]
                 item["urlId"] = '%s_%s' % (self.name, item["urlId"])
                 item["time"] = node.xpath("./p[2]/span[2]/text()").extract_first()
+                if item["time"] is not None:
+                    item["time"] = str(item["time"]).replace(' ','')
+                    item["time"] = item["time"][0:10]
                 # item["time"] = item["time"][0].split(' ')[0]
                 # 判断这个帖子是否符合时间
                 if TimeMarch.time_March(item["time"],self.default_scope_day):

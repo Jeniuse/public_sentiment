@@ -6,7 +6,7 @@ from baiduspider.items import inititem
 from .. import TimeMarch
 from ..child_page import child_page
 from .. import read_json
-# 山西省广播电视局
+# 青海省广播电视局
 class hhtcsSpider(scrapy.Spider):
     name = 'govcnqh'
     allowed_domains = ['gdj.qinghai.gov.cn']
@@ -39,6 +39,8 @@ class hhtcsSpider(scrapy.Spider):
                 item["urlId"] = '%s_%s' % (self.name, item["urlId"])
                 item["time"] = node.xpath("./td[3]/text()").extract_first()
                 item["time"] = "".join(item["time"])
+                if item["time"] is not None:
+                    item["time"] = str(item["time"]).replace(' ','')[0:10]
                 # item["time"] = item["time"].split(' - ')[-1]
                 # item["time"] = time.strftime("%Y-%m-%d", time.strptime(item["time"].split(' ')[0], "%Y年%m月%d日"))
                 # 判断这个帖子是否符合时间
