@@ -57,10 +57,8 @@ class wszgcsSpider(scrapy.Spider):
                 if (childUrl != None):#判断是否已经爬过,决定是否访问子页面
                     id = item['url'].split('/')[3]  # 得到url
                     num = id.split('-')[1]
-                    if num not in self.idlist:
-                        item["info"] = ChildPage.ChildPage(childUrl, '3')
-                    else:
-                        print("已经爬过")
+                    item["info"] = ChildPage.ChildPage(childUrl, '3')
+
             if(NextPageUrl == ''):#记录下一页的链接
                 NextPageUrl =response.xpath('//a[@class="bm_h"]/@rel').extract_first()
             if item["url"] != None:  # 非普通帖子的错误处理（置顶帖等异常的帖子）
