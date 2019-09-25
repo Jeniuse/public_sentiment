@@ -18,12 +18,11 @@ def export_log(log_info):
 		fp.write('\n')
 
 sql = ""
-with open('insert_basd_sql.txt','r') as fp:
+with open('update_basd_sql.txt','r') as fp:
 	sql = fp.read()
-print(sql)
 
 try:
 	op = OrclPool()
 	op.execute_sql(sql)
 except Exception as e:
-	export_log({"type":"新增sql","data":sql,"exception":str(e)})
+	export_log({"type":"更新sql","data":sql,"exception":str(e)})

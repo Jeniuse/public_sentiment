@@ -20,20 +20,59 @@ def update_keywords_fromtxt():
 	return keywords
 
 # 批量插入数据库
-def basd_info_add(sql):
+def basd_info_add(insert_sql, update_sql):
+	# 更新
+	if update_sql!="":
+		try:
+			with open('update_basd_sql.txt','w',encoding= 'utf8') as fp:
+				fp.write(update_sql)
+			os.system('python3 update_basd.py > sql_check.txt')
+			print('更新')
+			# print(update_sql)
+		except Exception as e:
+			export_log({"type":"更新sql","data":update_sql,"exception":str(e)})
+	# 存储
+	if insert_sql != 'insert all select 1 from dual':
+		try:
+			with open('insert_basd_sql.txt','w',encoding= 'utf8') as fp:
+				fp.write(insert_sql)
+			os.system('python3 insert_basd.py > sql_check.txt')
+			print('存储')
+			# print(insert_sql)
+		except Exception as e:
+			export_log({"type":"批量插入sql","data":insert_sql,"exception":str(e)})
+
+# 检测时间
+def check_time(res,param_time):
+	split_len = len(param_time.split('-'))-1 # 时间-的个数
+	# 时间处理
+	if len(param_time)<12:
+		if split_len==1:
+			param_time = "%s-01 00:00:00"%param_time
+		elif split_len==2:
+			param_time = "%s 00:00:00"%param_time
+		else:
+			param_time = "%s-01-01 00:00:00"%param_time
+	else:
+		split_len = len(param_time.split(':'))-1 # 时间:的个数
+		if split_len==0:
+			param_time = "%s:00:00"%param_time
+		elif split_len==1:
+			param_time = "%s:00"%param_time
+		else:
+			param_time = param_time = "%s"%param_time
 	try:
-		with open('insert_basd_sql.txt','w',encoding= 'utf8') as fp:
-			fp.write(sql)
-		os.system('python3 insert_basd.py > sql_check.txt')
-		print('插入数据库')
-		# print(sql)
-	except Exception as e:
-		if sql != 'insert all select 1 from dual':
-			export_log({"type":"批量插入sql","data":sql,"exception":str(e)})
+		time.strptime(param_time,"%Y-%m-%d %H:%M:%S")
+	except:
+		export_log({"type":"时间处理错误","data":res})
+		param_time = "null"
+	return param_time
 
 # SQL拼接
 def sendPartition(iter):
-	sql = 'insert all '
+	insert_sql = 'insert all '
+	delete_sql = ''
+	check_ID_list = []
 	b = False
 	for record in iter:
 		try:
@@ -41,28 +80,29 @@ def sendPartition(iter):
 			# 拼接内容部分的sql
 			sql_content = ""
 			res = json.loads(record[0])
-			split_len = len(res['OCCUR_TIME'].split('-'))-1 # 时间-的个数
-			occur_time = res['OCCUR_TIME']
-			# 时间处理
-			if len(occur_time)<15:
-				if split_len==1:
-					occur_time = "%s-01 00:00:00"%occur_time
-				elif split_len==2:
-					occur_time = "%s 00:00:00"%occur_time
-				else:
-					occur_time = "%s-01-01 00:00:00"%occur_time
-			else:
-				occur_time = "%s"%res['OCCUR_TIME']
-			try:
-				time.strptime(occur_time,"%Y-%m-%d %H:%M:%S")
-			except:
-				export_log({"type":"时间处理错误","data":res})
-				occur_time = "2000-01-01 00:00:00"
+			occur_time = check_time(res,res['OCCUR_TIME'])
+			# 最新爬取时间
+			fetch_time = check_time(res,res['FETCH_TIME'])
+			# 文档最新评论时间或修改时间
+			last_update_time = check_time(res,res['LAST_UPDATE_TIME'])
+			if occur_time is not 'null':
+				occur_time = "to_timestamp('"+occur_time+"','yyyy-mm--dd hh24:mi:ss.ff')"
+			if fetch_time is not 'null':
+				fetch_time = "to_timestamp('"+fetch_time+"','yyyy-mm--dd hh24:mi:ss.ff')"
+			if last_update_time is not 'null':
+				last_update_time = "to_timestamp('"+last_update_time+"','yyyy-mm--dd hh24:mi:ss.ff')"
+			# 浏览量，如果无法爬取到，置空
+			browse_size = 'null' if res['BROWSE_SIZE'] == None else str(res['BROWSE_SIZE'])
+			# 评论量，如果无法爬取到，置空
+			comment_size = 'null' if res['COMMENT_SIZE'] == None else str(res['COMMENT_SIZE'])
+			# 点赞量，如果无法爬取到，置空
+			thumbsup_size = 'null' if res['THUMBSUP_SIZE'] == None else str(res['THUMBSUP_SIZE'])
 			# 简介为空的情况
 			if res['INTRODUCTION'] != '':
 				res['TITLE'] = res['TITLE'].replace('\'','"')
 				res['INTRODUCTION'] = res['INTRODUCTION'].replace('\'','"')
-				sql_content = ",'"+res['TITLE']+"','"+res['INTRODUCTION']+"','"+res['URL']+"',to_timestamp('"+occur_time+"','yyyy-mm--dd hh24:mi:ss.ff'),"+res['ORIGIN_VALUE']+",'"+res['ORIGIN_NAME']+"') "
+				sql_content = ",'"+res['TITLE']+"','"+res['INTRODUCTION']+"','"+res['URL']+"',"+occur_time+","+res['ORIGIN_VALUE']+",'"+res['ORIGIN_NAME']+"'"
+				sql_content += ","+browse_size+","+comment_size+","+thumbsup_size+","+fetch_time+","+last_update_time+") "
 			else:
 				if res['ORIGIN_VALUE'] == '500010000000002':
 					export_log({"type":"没有简介","data":res})
@@ -74,34 +114,40 @@ def sendPartition(iter):
 				key_match = record[1]
 				# ('爬虫内容', [('2', '测试', '测试,test', '测试'), ('1', '户户通', '户户通,恶意,安装', '户户通')])
 				for km in key_match:
-					sql_basd += "into BASE_ANALYSIS_SENTIMENT_DETAIL(PID,NAME,MAIN_WORD,key_WORD,TITLE,INTRODUCTION,URL,OCCUR_TIME,ORIGIN_VALUE,ORIGIN_NAME) "
+					sql_basd += "into BASE_ANALYSIS_SENTIMENT_DETAIL(PID,NAME,MAIN_WORD,key_WORD,TITLE,INTRODUCTION,URL,OCCUR_TIME,ORIGIN_VALUE,ORIGIN_NAME,BROWSE_SIZE,COMMENT_SIZE,THUMBSUP_SIZE,FETCH_TIME,LAST_UPDATE_TIME) "
 					sql_basd += "values("+str(km[0])+",'"+km[1]+"','"+km[2]+"','"+km[3]+"'"
 					sql_basd += sql_content
-				sql += sql_basd
+				insert_sql += sql_basd
+			check_ID_list.extend(record[2])
+			check_ID_list = set(check_ID_list)
 		except:
 			export_log({"type":"拼接sql","data":record[0]})
-	sql += "select 1 from dual"
-	print(sql)
+	insert_sql += "select 1 from dual"
+	# delete
+	if len(check_ID_list)!=0:
+		delete_sql = 'delete from BASE_ANALYSIS_SENTIMENT_DETAIL where ID in (%s)'%(','.join(check_ID_list))
+	print(insert_sql)
 	if b:
-		basd_info_add(sql)
+		basd_info_add(insert_sql, delete_sql)
 	
-# 检查是否有重复
-# def check_sentence(http_url):
-# 	sql = "select TITLE from BASE_ANALYSIS_SENTIMENT_DETAIL where URL='%s'"%http_url
-# 	op = OrclPool()
-# 	res_check = op.fetch_all(sql)
-# 	if len(res_check)==0:
-# 		return False
-# 	return True
+# 检查是否有重复,有重复返回ID列表，无重复返回空列表
+def check_sentence(http_url):
+	sql = "select ID from BASE_ANALYSIS_SENTIMENT_DETAIL where URL='%s'"%http_url
+	op = OrclPool()
+	res_check = op.fetch_all(sql)
+	print(res_check)
+	if len(res_check)==0:
+		return []
+	else:
+		return [str(rc[0]) for rc in res_check]
 
 def ayls_sentence(sentence):
 	# keywords = update_keywords()
 	keywords = update_keywords_fromtxt()
 	res = json.loads(sentence[1])
-	# http_url = res['URL']
-	# 如果有重复
-	# if check_sentence(http_url):
-	# 	return (sentence,0)
+	http_url = res['URL']
+	# 获取重复ID
+	check_ID_list = check_sentence(http_url)
 	# 获取分词列表
 	conf_word = res['CONF_WORD'].lower().split('$$')
 	participle = set(conf_word) # 去重
@@ -124,7 +170,7 @@ def ayls_sentence(sentence):
 		for kw in res_match:
 			vals = keywords.get(kw)
 			key_match.append((vals['id'],vals['name'],vals['main_word'],kw))
-		return (sentence[1],key_match)
+		return (sentence[1],key_match,check_ID_list)
 	# return (sentence,0)
 
 def filter_sentence(sentence):
