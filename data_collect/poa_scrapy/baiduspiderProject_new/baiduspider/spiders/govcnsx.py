@@ -47,7 +47,7 @@ class hhtcsSpider(scrapy.Spider):
                 res_child = child_page(item["url"])
                 item["info"] = res_child.xpath("//div[@id = 'Zoom']/p/text() | //div[@id='Zoom']/text()")
                 item["info"] = "".join(item["info"])
-                item["info"] = bytearray.fromhex(''.join(item["info"].split("\\x"))).decode()
+                # item["info"] = bytearray.fromhex(''.join(item["info"].split("\\x"))).decode()
             except:
                 item['IsFilter'] = False
             yield item

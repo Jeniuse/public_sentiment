@@ -12,11 +12,7 @@ import json
 class hhtcsSpider(scrapy.Spider):
     name = 'govcngd'
     allowed_domains = ['gbdsj.gd.gov.cn/']
-    start_urls = [
-        "http://search.gd.gov.cn/api/search/all?keywords=%s&page=1"%"直播卫星",
-        "http://search.gd.gov.cn/api/search/all?keywords=%s&page=1"%"中星九号",
-        "http://search.gd.gov.cn/api/search/all?keywords=%s&page=1"%"扶贫工程"
-    ]
+
     allowed_timesup = 10  # 最多超过时限次数
     if(read_json.read_json(name)):
         default_scope_day = 60 #首次爬取时限
@@ -24,6 +20,7 @@ class hhtcsSpider(scrapy.Spider):
         default_scope_day = 30 #增量爬取时限
 
     def start_requests(self):
+        # 广东只能获取post数据，通过formrequest方式访问，取回的数据处理成字典自动获取
         yield scrapy.FormRequest(
             url='http://search.gd.gov.cn/api/search/all',
             formdata={
