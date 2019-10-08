@@ -16,49 +16,49 @@ os.environ['NLS_LANG'] = 'SIMPLIFIED CHINESE_CHINA.UTF8'
 global producer
 producer = KafkaProducer(bootstrap_servers=['172.16.54.139:6667','172.16.54.140:6667','172.16.54.141:6667','172.16.54.148:6667'])
 
-def GetgzhList(keyword, page):
-    isSucess = False
-    mostTryCounts = 3  # 最大尝试次数
-    count = 0
-    while (isSucess == False and count < mostTryCounts):
-        count = count + 1
-        iplist = read_Proxies()  # 得到代理IP列表
-        itemList = []
-        IP = {}
-        ss = 0 # 成功的次数
-        ff = 0 # 不成功的次数
-        isFinaly =False
-        for ip in iplist:
-            try:
-                ws_api = wechatsogou.WechatSogouAPI(proxies=ip, timeout=5)
-                tempList = ws_api.search_gzh(keyword, page=page)
-                itemList = get_data(tempList, 1)  # 数据列表
-                if (tempList != []):
-                    label = tempList[0]  # 判断是否最后一页的标志量
-                    isFinaly = label['isFinaly']
-                print("返回后公众号列表长度:" + str(len(itemList)))
-                ss = ss+1
-                if (len(itemList) != 0 and isFinaly == True):
-                    print("已经爬到最后一页")
-                    isSucess = True
-                    break
-                if (len(itemList) != 0):
-                    IP = ip
-                    isSucess = True
-                    break
-            except Exception as e:
-                print("公众号访问出错，检测ip是否失效")
-                ff = ff+1
-                print(e)
-                check_ip(ip)
-                continue
-        if isSucess == False and ss <= ff:
-            get_ip()
-    if isSucess == False:
-        print("ERROR" + " 可能关键字不存在或者已经爬到最后一页")
-    else:
-        print("SUCESS")
-        return [itemList, isFinaly]
+# def GetgzhList(keyword, page):
+#     isSucess = False
+#     mostTryCounts = 3  # 最大尝试次数
+#     count = 0
+#     while (isSucess == False and count < mostTryCounts):
+#         count = count + 1
+#         iplist = read_Proxies()  # 得到代理IP列表
+#         itemList = []
+#         IP = {}
+#         ss = 0 # 成功的次数
+#         ff = 0 # 不成功的次数
+#         isFinaly =False
+#         for ip in iplist:
+#             try:
+#                 ws_api = wechatsogou.WechatSogouAPI(proxies=ip, timeout=5)
+#                 tempList = ws_api.search_gzh(keyword, page=page)
+#                 itemList = get_data(tempList, 1)  # 数据列表
+#                 if (tempList != []):
+#                     label = tempList[0]  # 判断是否最后一页的标志量
+#                     isFinaly = label['isFinaly']
+#                 print("返回后公众号列表长度:" + str(len(itemList)))
+#                 ss = ss+1
+#                 if (len(itemList) != 0 and isFinaly == True):
+#                     print("已经爬到最后一页")
+#                     isSucess = True
+#                     break
+#                 if (len(itemList) != 0):
+#                     IP = ip
+#                     isSucess = True
+#                     break
+#             except Exception as e:
+#                 print("公众号访问出错，检测ip是否失效")
+#                 ff = ff+1
+#                 print(e)
+#                 check_ip(ip)
+#                 continue
+#         if isSucess == False and ss <= ff:
+#             get_ip()
+#     if isSucess == False:
+#         print("ERROR" + " 可能关键字不存在或者已经爬到最后一页")
+#     else:
+#         print("SUCESS")
+#         return [itemList, isFinaly]
 
 # 检测ip是否失效
 def check_ip(ips):
@@ -282,27 +282,6 @@ def get_article(gzh,titleList):
     print("Finish")
     return articleList
 
-
-def getKeylist():
-    # 取得关键字
-    os.environ['NLS_LANG'] = 'SIMPLIFIED CHINESE_CHINA.UTF8'
-    op = OrclPool()
-    sql = "select key_word from BASE_ANALYSIS_SENTIMENT where DICT_ENABLED_VALUE=300010000000001"
-    list1 = op.fetch_all(sql)
-    keylist = []
-    for node in list1:
-        temp1 = str(node).replace("'", '')
-        temp2 = temp1.replace("(" or ")", "")
-        temp3 = temp2.replace(")", "")
-        temp4 = temp3.split(",")
-        for key in temp4:
-            if key != '':
-                keylist.append(key)
-    keylist = set(keylist)
-    keylist = list(keylist)
-    return keylist
-
-
 def run():
     global producer
     # 自定义分词库---begin
@@ -325,61 +304,40 @@ def run():
     else:
         check_ip_list(ip_list)
 
-    testlist = [{'title': '1', 'info': '11', 'time': '1', 'url': '1'},  # 测试用数据
-                {'title': '2', 'info': '22', 'time': '1', 'url': '1'},
-                {'title': '3', 'info': '33', 'time': '1', 'url': '1'},
-                {'title': '4', 'info': '44', 'time': '1', 'url': '1'},
-                {'title': '5', 'info': '55', 'time': '1', 'url': '1'}]
-    keylist = getKeylist()
+    # testlist = [{'title': '1', 'info': '11', 'time': '1', 'url': '1'},  # 测试用数据
+    #             {'title': '2', 'info': '22', 'time': '1', 'url': '1'},
+    #             {'title': '3', 'info': '33', 'time': '1', 'url': '1'},
+    #             {'title': '4', 'info': '44', 'time': '1', 'url': '1'},
+    #             {'title': '5', 'info': '55', 'time': '1', 'url': '1'}]
+    gzhList = ['户户通315行业网站','户户通微平台','户户通行业服务中心','户户通中九卫星用户交流平台','广播电视信息']
     count_art = 0
-    for key in keylist:
+
+    title_list = []  # 最终的文章列表
+    pageCount = 0
+    for gzh in gzhList:
+        print(gzh)
+        pageCount = pageCount+1
         # 处理公众号
         # 首次出错处理
         try:
-            titleList_key = read_file("./baiduspiderProject_new/baiduspider/jsonfile/sougou.json")[key]
+            titleList_key = read_file("./baiduspiderProject_new/baiduspider/jsonfile/sougou.json")[gzh]
         except:
             titleList_key = []
-        page = 1
-        title_list = []  # 最终的文章列表
-        isEnd = False  # 判断是否爬到尾页
-        while (1):
-            gzhList = []
-            print("公众号%s=====================第%d页"%(key,page))
-            tempList = GetgzhList(key, page)  # 得到公众号列表
-            try:
-                testList = tempList[0]  # 用来判断是否为空
-            except:
-                isEnd = True
-                break
-            count_art = count_art+1
-            isEnd = tempList[1]  # 是否爬到尾页
-            for gzh in tempList[0]:
-                print(gzh)
-                if (gzh != None):
-                    gzhList.append(gzh)
-            page = page + 1
+        #获得公众号文章
+        print('爬取公众号====%s====文章'%(gzh))
+        article_list = get_article(gzh,titleList_key)
+        if(article_list==False):
+            print('失败停止停止5s=============================================')
+            time.sleep(5)#失败停止5s
+            continue
+        else:
+            for article in article_list:  # 将文章存入titlelist
+                title_list.append(article['title'] + '/' + article['time'])
 
-            # #################################
-            pageCount = 0
-            for gzh in gzhList:
-                print(gzh)
-                pageCount = pageCount+1
-                #获得公众号文章
-                print('关键词：%s,爬取公众号====%s====文章，第%d页，第%d个'%(key,gzh,page-1,pageCount))
-                article_list = get_article(gzh,titleList_key)
-                if(article_list==False):
-                    print('失败停止停止5s=============================================')
-                    time.sleep(5)#失败停止5s
-                    continue
-                else:
-                    for article in article_list:  # 将文章存入titlelist
-                        title_list.append(article['title'] + '/' + article['time'])
-
-            if (isEnd == True): break
-        # 字典记录数据
-        tempdic = read_dic("./baiduspiderProject_new/baiduspider/jsonfile/sougou.json")
-        tempdic.update({key: title_list})
-        write_file("./baiduspiderProject_new/baiduspider/jsonfile/sougou.json", tempdic)
+    # 字典记录数据
+    tempdic = read_dic("./baiduspiderProject_new/baiduspider/jsonfile/sougou.json")
+    tempdic.update({gzh: title_list})
+    write_file("./baiduspiderProject_new/baiduspider/jsonfile/sougou.json", tempdic)
     if count_art==0:
         writeProxies([])
     print('==================end==================')
@@ -409,8 +367,6 @@ def Kafka_fun(art):
     dict['TITLE'] = art['title'][:40]
     dict['URL'] = art['url']
     dict['INTRODUCTION'] = art['info'][:400]
-    # localtime = time.localtime()
-    # t = time.strftime("%Y-%m-%d %H:%M:%S", localtime)
     dict['OCCUR_TIME'] = art['time']
     dict['ORIGIN_VALUE'] = '500010000000002'
     dict['ORIGIN_NAME'] = '微信'
