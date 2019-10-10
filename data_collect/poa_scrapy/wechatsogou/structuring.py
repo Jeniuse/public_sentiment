@@ -12,7 +12,7 @@ from lxml.etree import XML
 
 from wechatsogou.exceptions import WechatSogouException
 from wechatsogou.five import str_to_bytes
-from wechatsogou.tools import get_elem_text, list_or_empty, replace_html, get_first_of_element
+from wechatsogou.tools import get_elem_text, list_or_empty, replace_html, get_first_of_element, format_image_url
 
 backgroud_image_p = re.compile('background-image:[ ]+url\(\"([\w\W]+?)\"\)')
 js_content = re.compile('js_content.*?>((\s|\S)+)</div>')
@@ -71,20 +71,16 @@ class WechatSogouStructuring(object):
 
         page = etree.HTML(text)
         lis = page.xpath('//ul[@class="news-list2"]/li')
-        NextPage = page.xpath('//*[@id="sogou_next"]/text()')
-        if (NextPage != []):
-            isFinaly = False
-        else:
-            isFinaly = True
         relist = []
         for li in lis:
             url = get_first_of_element(li, 'div/div[1]/a/@href')
-            headimage = get_first_of_element(li, 'div/div[1]/a/img/@src')
+            headimage = format_image_url(get_first_of_element(li, 'div/div[1]/a/img/@src'))
             wechat_name = get_elem_text(get_first_of_element(li, 'div/div[2]/p[1]'))
             info = get_elem_text(get_first_of_element(li, 'div/div[2]/p[2]'))
             qrcode = get_first_of_element(li, 'div/div[3]/span/img[1]/@src')
             introduction = get_elem_text(get_first_of_element(li, 'dl[1]/dd'))
             authentication = get_first_of_element(li, 'dl[2]/dd/text()')
+
             relist.append({
                 'open_id': headimage.split('/')[-1],
                 'profile_url': url,
@@ -96,7 +92,6 @@ class WechatSogouStructuring(object):
                 'authentication': authentication,
                 'post_perm': -1,
                 'view_perm': -1,
-                'isFinaly' : isFinaly
             })
 
         if post_view_perms:
@@ -106,8 +101,8 @@ class WechatSogouStructuring(object):
                     if len(post_view_perm) == 2:
                         i['post_perm'] = int(post_view_perm[0])
                         i['view_perm'] = int(post_view_perm[1])
-
         return relist
+
     @staticmethod
     def get_article_by_search_wap(keyword, wap_dict):
         datas = []
@@ -206,7 +201,7 @@ class WechatSogouStructuring(object):
                 'article': {
                     'title': title,
                     'url': url,
-                    'imgs': imgs,
+                    'imgs': format_image_url(imgs),
                     'abstract': abstract,
                     'time': time
                 },
@@ -476,26 +471,23 @@ class WechatSogouStructuring(object):
 
         # 2. 删除部分标签
         if del_qqmusic:
-            qqmusic = content_text.find_all('qqmusic')
+            qqmusic = content_text.find_all('qqmusic') or []
             for music in qqmusic:
                 music.parent.decompose()
 
         if del_voice:
             # voice是一个p标签下的mpvoice标签以及class为'js_audio_frame db'的span构成，所以将父标签删除
-            voices = content_text.find_all('mpvoice')
+            voices = content_text.find_all('mpvoice') or []
             for voice in voices:
                 voice.parent.decompose()
 
         # 3. 获取所有的图片 [img标签，和style中的background-image]
         all_img_set = set()
-        all_img_element = content_text.find_all('img')
+        all_img_element = content_text.find_all('img') or []
         for ele in all_img_element:
             # 删除部分属性
-            img_url = ele.attrs['data-src']
+            img_url = format_image_url(ele.attrs['data-src'])
             del ele.attrs['data-src']
-
-            if img_url.startswith('//'):
-                img_url = 'http:{}'.format(img_url)
 
             ele.attrs['src'] = img_url
 
@@ -503,7 +495,7 @@ class WechatSogouStructuring(object):
                 raise WechatSogouException('img_url [{}] 不合法'.format(img_url))
             all_img_set.add(img_url)
 
-        backgroud_image = content_text.find_all(style=re.compile("background-image"))
+        backgroud_image = content_text.find_all(style=re.compile("background-image")) or []
         for ele in backgroud_image:
             # 删除部分属性
             if ele.attrs.get('data-src'):
@@ -517,7 +509,7 @@ class WechatSogouStructuring(object):
             all_img_set.add(img_url[0])
 
         # 4. 处理iframe
-        all_img_element = content_text.find_all('iframe')
+        all_img_element = content_text.find_all('iframe') or []
         for ele in all_img_element:
             # 删除部分属性
             img_url = ele.attrs['data-src']
