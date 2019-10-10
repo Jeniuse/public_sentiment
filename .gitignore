@@ -3,3 +3,5 @@ __pycache__/
 jsonfile/
 
 2.0-Deploy/
+
+*.pyc
