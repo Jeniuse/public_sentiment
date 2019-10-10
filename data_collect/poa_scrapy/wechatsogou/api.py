@@ -362,11 +362,15 @@ class WechatSogouAPI(object):
                                     session=session)
 
         article_list = WechatSogouStructuring.get_article_by_search(resp.text)
+        article_list1 = []
         for i in article_list:
             if decode_url:
                 i['article']['url'] = self.__format_url(i['article']['url'], url, resp.text, unlock_callback=unlock_callback, identify_image_callback=identify_image_callback, session=session)
+                i['article']['abstract'] = self.get_article_content(i['article']['url'], unlock_callback=unlock_callback, identify_image_callback=identify_image_callback)
                 i['gzh']['profile_url'] = self.__format_url(i['gzh']['profile_url'], url, resp.text, unlock_callback=unlock_callback, identify_image_callback=identify_image_callback, session=session)
-            yield i
+            # yield i
+            article_list1.append(i)
+        return article_list1
 
     def get_gzh_article_by_history(self, keyword=None, url=None,
                                    unlock_callback_sogou=None,
@@ -534,6 +538,7 @@ class WechatSogouAPI(object):
             raise WechatSogouException('get_article_content 链接 [{}] 已过期'.format(url))
         if raw:
             return resp.text
+        
         content_info = WechatSogouStructuring.get_article_detail(resp.text, del_qqmusic=del_qqmusic,
                                                                  del_voice=del_mpvoice)
         if hosting_callback:

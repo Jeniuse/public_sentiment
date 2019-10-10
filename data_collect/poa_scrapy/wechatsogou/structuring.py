@@ -468,7 +468,8 @@ class WechatSogouStructuring(object):
         # 1. 获取微信文本content
         html_obj = BeautifulSoup(text, "lxml")
         content_text = html_obj.find('div', {'class': 'rich_media_content', 'id': 'js_content'})
-
+        if content_text is None:
+            return ""
         # 2. 删除部分标签
         if del_qqmusic:
             qqmusic = content_text.find_all('qqmusic') or []
@@ -482,31 +483,31 @@ class WechatSogouStructuring(object):
                 voice.parent.decompose()
 
         # 3. 获取所有的图片 [img标签，和style中的background-image]
-        all_img_set = set()
-        all_img_element = content_text.find_all('img') or []
-        for ele in all_img_element:
-            # 删除部分属性
-            img_url = format_image_url(ele.attrs['data-src'])
-            del ele.attrs['data-src']
+        # all_img_set = set()
+        # all_img_element = content_text.find_all('img') or []
+        # for ele in all_img_element:
+        #     # 删除部分属性
+        #     img_url = format_image_url(ele.attrs['data-src'])
+        #     del ele.attrs['data-src']
 
-            ele.attrs['src'] = img_url
+        #     ele.attrs['src'] = img_url
 
-            if not img_url.startswith('http'):
-                raise WechatSogouException('img_url [{}] 不合法'.format(img_url))
-            all_img_set.add(img_url)
+        #     if not img_url.startswith('http'):
+        #         raise WechatSogouException('img_url [{}] 不合法'.format(img_url))
+        #     all_img_set.add(img_url)
 
-        backgroud_image = content_text.find_all(style=re.compile("background-image")) or []
-        for ele in backgroud_image:
-            # 删除部分属性
-            if ele.attrs.get('data-src'):
-                del ele.attrs['data-src']
+        # backgroud_image = content_text.find_all(style=re.compile("background-image")) or []
+        # for ele in backgroud_image:
+        #     # 删除部分属性
+        #     if ele.attrs.get('data-src'):
+        #         del ele.attrs['data-src']
 
-            if ele.attrs.get('data-wxurl'):
-                del ele.attrs['data-wxurl']
-            img_url = re.findall(backgroud_image_p, str(ele))
-            if not img_url:
-                continue
-            all_img_set.add(img_url[0])
+        #     if ele.attrs.get('data-wxurl'):
+        #         del ele.attrs['data-wxurl']
+        #     img_url = re.findall(backgroud_image_p, str(ele))
+        #     if not img_url:
+        #         continue
+        #     all_img_set.add(img_url[0])
 
         # 4. 处理iframe
         all_img_element = content_text.find_all('iframe') or []
@@ -517,11 +518,17 @@ class WechatSogouStructuring(object):
             ele.attrs['src'] = img_url
 
         # 5. 返回数据
-        all_img_list = list(all_img_set)
+        # all_img_list = list(all_img_set)
         content_html = content_text.prettify()
         # 去除div[id=js_content]
         content_html = re.findall(js_content, content_html)[0][0]
-        return {
-            'content_html': content_html,
-            'content_img_list': all_img_list
-        }
+        # return {
+        #     'content_html': content_html,
+        #     'content_img_list': all_img_list
+        # }
+        # return content_html
+        con_filter = ""
+        con_list = content_html.split('<')
+        for con in con_list:
+            con_filter = con_filter+"".join(con.split('>')[1:])
+        return con_filter
