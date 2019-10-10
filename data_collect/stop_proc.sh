@@ -3,7 +3,9 @@
 # 从命令行读取进程名称
 NAME=$1 
 echo "---------------"
-
+if [$NAME -eq ''];then
+echo '请输入参数'
+else
 echo $NAME '-> 正在停止'
 
 # 过滤进程列表，不显示grep对应的进程，awk从第二列获取进程ID
@@ -25,6 +27,5 @@ for id in $ID
     done
 
 echo $NAME '-> 已停止'
-
+fi
 echo "---------------"
-
