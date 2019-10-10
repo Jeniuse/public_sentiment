@@ -399,7 +399,7 @@ def Kafka_fun(art):
 
 # 以下为运行所用代码
 #打开hbase
-connection = happybase.Connection(host='localhost', port=9090)  # 得到连接
+connection = happybase.Connection(host='172.16.54.147', port=16000)  # 得到连接
 connection.open()  # 打开连接
 table = connection.table('CONF_FORUM')  # 根据名字得到表的实例
 run()

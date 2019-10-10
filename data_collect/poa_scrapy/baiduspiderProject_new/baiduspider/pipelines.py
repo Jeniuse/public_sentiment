@@ -3,16 +3,16 @@ import json
 import os
 import datetime
 ###############################################################################
-# import happybase
-# from kafka import KafkaProducer   #引入包，如果你在自己的电脑上跑，得先安装kafka
-# from oraclepool import OrclPool
+import happybase
+from kafka import KafkaProducer   #引入包，如果你在自己的电脑上跑，得先安装kafka
+from oraclepool import OrclPool
 import jieba
-# global producer
+global producer
 class BaiduspiderPipeline(object):
     #打开hbase
-    # connection = happybase.Connection(host='localhost', port=9090)  # 得到连接
-    # connection.open()  # 打开连接
-    # table = connection.table('CONF_FORUM')  # 根据名字得到表的实例
+    connection = happybase.Connection(host='172.16.54.147', port=16000)  # 得到连接
+    connection.open()  # 打开连接
+    table = connection.table('CONF_FORUM')  # 根据名字得到表的实例
 
     urlList = []
     deltaList=[]
@@ -21,16 +21,16 @@ class BaiduspiderPipeline(object):
 
     def __init__(self):
         ###############################################################################
-        # global producer
+        global producer
         # producer = KafkaProducer(bootstrap_servers=['172.16.54.139:6667'])
-        # producer = KafkaProducer(bootstrap_servers=['172.16.54.139:6667','172.16.54.140:6667','172.16.54.141:6667','172.16.54.148:6667'])
+        producer = KafkaProducer(bootstrap_servers=['172.16.54.139:6667','172.16.54.140:6667','172.16.54.141:6667','172.16.54.148:6667'])
         # 自定义分词库---begin
-        # op = OrclPool()
-        # sql = 'select WORD from CONF_WORD'
-        # lex_list = op.fetch_all(sql)
+        op = OrclPool()
+        sql = 'select WORD from CONF_WORD'
+        lex_list = op.fetch_all(sql)
         lex_str = '$$$$$'
-        # for lex in lex_list:
-        #     lex_str = '%s\n%s'%(lex_str,lex[0])
+        for lex in lex_list:
+            lex_str = '%s\n%s'%(lex_str,lex[0])
         with open('userdict.txt','w',encoding= 'utf8') as fp:
             fp.write(lex_str)
         jieba.load_userdict('userdict.txt')
@@ -107,7 +107,7 @@ class BaiduspiderPipeline(object):
             msg = json.dumps(pstmt,ensure_ascii=False)
             print('========================================')
             print(msg)
-            # producer.send('postsarticles', msg.encode('utf-8'))
+            producer.send('postsarticles', msg.encode('utf-8'))
             # Hbase--begin
             item['conf_word'] = conf_word
             self.HbaseTranport(item)
@@ -151,4 +151,4 @@ class BaiduspiderPipeline(object):
                 'FAMILY:CONTENT': json.dumps(item['info'][:400]),
                 'FAMILY:KEY_WORDS': json.dumps(item['conf_word'])
                 }
-        # self.table.put(row=item['url'], data=data)  # 向表中传入数据
+        self.table.put(row=item['url'], data=data)  # 向表中传入数据
