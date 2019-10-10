@@ -362,11 +362,12 @@ class WechatSogouAPI(object):
                                     session=session)
 
         article_list = WechatSogouStructuring.get_article_by_search(resp.text)
-        for i in article_list:
-            if decode_url:
-                i['article']['url'] = self.__format_url(i['article']['url'], url, resp.text, unlock_callback=unlock_callback, identify_image_callback=identify_image_callback, session=session)
-                i['gzh']['profile_url'] = self.__format_url(i['gzh']['profile_url'], url, resp.text, unlock_callback=unlock_callback, identify_image_callback=identify_image_callback, session=session)
-            yield i
+        return article_list
+        # for i in article_list:
+        #     if decode_url:
+        #         i['article']['url'] = self.__format_url(i['article']['url'], url, resp.text, unlock_callback=unlock_callback, identify_image_callback=identify_image_callback, session=session)
+        #         i['gzh']['profile_url'] = self.__format_url(i['gzh']['profile_url'], url, resp.text, unlock_callback=unlock_callback, identify_image_callback=identify_image_callback, session=session)
+        #     yield i
 
     def get_gzh_article_by_history(self, keyword=None, url=None,
                                    unlock_callback_sogou=None,
