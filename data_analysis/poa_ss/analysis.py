@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*- 
+# coding=utf-8
 from pyspark import SparkConf
 from pyspark import SparkContext
 from pyspark.streaming import StreamingContext
@@ -10,7 +10,8 @@ import py4j
 # import sys
 # reload(sys)
 # sys.setdefaultencoding("utf-8")
-os.environ['NLS_LANG'] = 'SIMPLIFIED CHINESE_CHINA.UTF8'
+# print(sys.getdefaultencoding())
+# os.environ['NLS_LANG'] = 'SIMPLIFIED CHINESE_CHINA.UTF8'
 
 # 获取关键字
 def update_keywords_fromtxt():
@@ -27,20 +28,20 @@ def basd_info_add(insert_sql, update_sql):
 			with open('update_basd_sql.txt','w',encoding= 'utf8') as fp:
 				fp.write(update_sql)
 			os.system('python3 update_basd.py > sql_check.txt')
-			print('更新')
+			print('update')
 			# print(update_sql)
 		except Exception as e:
-			export_log({"type":"更新sql","data":update_sql,"exception":str(e)})
+			export_log({"type":"updatesql","data":update_sql,"exception":str(e)})
 	# 存储
 	if insert_sql != 'insert all select 1 from dual':
 		try:
 			with open('insert_basd_sql.txt','w',encoding= 'utf8') as fp:
 				fp.write(insert_sql)
 			os.system('python3 insert_basd.py > sql_check.txt')
-			print('存储')
+			print('store')
 			# print(insert_sql)
 		except Exception as e:
-			export_log({"type":"批量插入sql","data":insert_sql,"exception":str(e)})
+			export_log({"type":"batch_insert_sql","data":insert_sql,"exception":str(e)})
 
 # 检测时间
 def check_time(res,param_time):
@@ -64,7 +65,7 @@ def check_time(res,param_time):
 	try:
 		time.strptime(param_time,"%Y-%m-%d %H:%M:%S")
 	except:
-		export_log({"type":"时间处理错误","data":res})
+		export_log({"type":"time_error","data":res})
 		param_time = "null"
 	return param_time
 
@@ -105,9 +106,9 @@ def sendPartition(iter):
 				sql_content += ","+browse_size+","+comment_size+","+thumbsup_size+","+fetch_time+","+last_update_time+") "
 			else:
 				if res['ORIGIN_VALUE'] == '500010000000002':
-					export_log({"type":"没有简介","data":res})
+					export_log({"type":"no INTRODUCTION","data":res})
 				else:
-					export_log({"type":"没有阅读权限","data":res})
+					export_log({"type":"no Reading permissions","data":res})
 			if sql_content != "":
 				# 拼接内容的sql，拼接关键字
 				sql_basd = ""
@@ -120,8 +121,9 @@ def sendPartition(iter):
 				insert_sql += sql_basd
 			check_ID_list.extend(record[2])
 			check_ID_list = set(check_ID_list)
-		except:
-			export_log({"type":"拼接sql","data":record[0]})
+		except Exception as e:
+			print(e)
+			export_log({"type":"Stitching pinjie sql","data":record[0]})
 	insert_sql += "select 1 from dual"
 	# delete
 	if len(check_ID_list)!=0:
@@ -132,14 +134,11 @@ def sendPartition(iter):
 	
 # 检查是否有重复,有重复返回ID列表，无重复返回空列表
 def check_sentence(http_url):
-	sql = "select ID from BASE_ANALYSIS_SENTIMENT_DETAIL where URL='%s'"%http_url
-	op = OrclPool()
-	res_check = op.fetch_all(sql)
-	print(res_check)
-	if len(res_check)==0:
-		return []
-	else:
-		return [str(rc[0]) for rc in res_check]
+	os.system('python3 check_httpurl.py %s'%http_url)
+	check_httpurl = []
+	with open('./check_httpurl.txt','r') as fp:
+		check_httpurl = json.loads(fp.read())
+	return check_httpurl
 
 def ayls_sentence(sentence):
 	# keywords = update_keywords()

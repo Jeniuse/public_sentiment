@@ -26,4 +26,5 @@ try:
 	op = OrclPool()
 	op.execute_sql(sql)
 except Exception as e:
-	export_log({"type":"新增sql","data":sql,"exception":str(e)})
+	print(e)
+	export_log({"type":"insert_sql","data":sql,"exception":str(e)})

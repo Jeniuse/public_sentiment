@@ -25,4 +25,4 @@ try:
 	op = OrclPool()
 	op.execute_sql(sql)
 except Exception as e:
-	export_log({"type":"更新sql","data":sql,"exception":str(e)})
+	export_log({"type":"update_sql","data":sql,"exception":str(e)})
