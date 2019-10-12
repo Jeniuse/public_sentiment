@@ -366,6 +366,7 @@ class WechatSogouAPI(object):
         for i in article_list:
             if decode_url:
                 i['article']['url'] = self.__format_url(i['article']['url'], url, resp.text, unlock_callback=unlock_callback, identify_image_callback=identify_image_callback, session=session)
+                print(i['article']['url'])
                 i['article']['abstract'] = self.get_article_content(i['article']['url'], unlock_callback=unlock_callback, identify_image_callback=identify_image_callback)
                 i['gzh']['profile_url'] = self.__format_url(i['gzh']['profile_url'], url, resp.text, unlock_callback=unlock_callback, identify_image_callback=identify_image_callback, session=session)
             # yield i
