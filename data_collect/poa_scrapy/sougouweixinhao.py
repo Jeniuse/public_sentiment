@@ -317,20 +317,25 @@ def read_file(path):
 
 def Kafka_fun(art):
     global producer
-    dict = {'TITLE': '', 'INTRODUCTION': '', 'ORIGIN_VALUE': '', 'ORIGIN_NAME': '', 'OCCUR_TIME': '', 'URL': '', 'CONF_WORD': ''}
-    dict['TITLE'] = art['title'][:40]
-    dict['URL'] = art['url']
-    dict['INTRODUCTION'] = art['info'][:400]
-    dict['OCCUR_TIME'] = art['time']
-    dict['ORIGIN_VALUE'] = '500010000000002'
-    dict['ORIGIN_NAME'] = '微信'
+    pstmt = {'TITLE': '', 'INTRODUCTION': '', 'ORIGIN_VALUE': '', 'ORIGIN_NAME': '', 'OCCUR_TIME': '', 'URL': '', 'CONF_WORD': ''}
+    pstmt['TITLE'] = art['title'][:40]
+    pstmt['URL'] = art['url']
+    pstmt['INTRODUCTION'] = art['info'][:400]
+    pstmt['OCCUR_TIME'] = art['time']
+    pstmt['ORIGIN_VALUE'] = '500010000000002'
+    pstmt['ORIGIN_NAME'] = '微信'
+    pstmt['BROWSE_SIZE'] = None
+    pstmt['COMMENT_SIZE'] = None
+    pstmt['FETCH_TIME'] = None
+    pstmt['LAST_UPDATE_TIME'] = None
+    pstmt['THUMBSUP_SIZE'] = None
     # 分词---begin
     se = '%s。%s'%(art['title'],art['info']) # 得到标题和内容
     res_part = jieba.lcut_for_search(se) # 分词后返回list
     participle = set(res_part) # 去重
     sepa = '$$'
     conf_word = sepa.join(participle) # conf_word为拼接后的字符串
-    dict['CONF_WORD']=conf_word
+    pstmt['CONF_WORD']=conf_word
     # 分词---end
     # hbase---start
     if art['time'].count('-') == 1:
@@ -345,7 +350,7 @@ def Kafka_fun(art):
             }
     table.put(row=art['url'], data=data)  # 向表中传入数据
     # hbase---end
-    msg = json.dumps(dict, ensure_ascii=False)
+    msg = json.dumps(pstmt, ensure_ascii=False)
     print("------------------------------------------------------------------------------------")
     print(msg)
     producer.send('postsarticles', msg.encode('utf-8'))
