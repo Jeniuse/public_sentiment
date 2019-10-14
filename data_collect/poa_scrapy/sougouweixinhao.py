@@ -157,7 +157,6 @@ def get_proxy(aip):
 
 def writeProxies(proxies):
     f = open("proxies.json", "w", encoding='UTF-8')
-    proxies = [1,2,3]
     content = json.dumps(proxies, ensure_ascii=False)
     f.write(content)
     print("写入完成")
@@ -170,7 +169,7 @@ def read_Proxies():
     except Exception as e:
         print("文件不存在")
         print(e)
-        return [1,2,3]
+        return []
 
 def get_data(listDic,gzh):
     print("获取列表长度:" + str(len(listDic)))
@@ -219,6 +218,7 @@ def get_article(gzh,titleList):
                         articleList.append(unique)
                         if unique not in titleList:
                             # 增量,在此处存入消息队列
+                            print('kafka')
                             Kafka_fun(art)
                             deltaList.append(art['title'])
                 print("下一组文章")
@@ -317,7 +317,7 @@ def read_file(path):
 
 def Kafka_fun(art):
     global producer
-    pstmt = {'TITLE': '', 'INTRODUCTION': '', 'ORIGIN_VALUE': '', 'ORIGIN_NAME': '', 'OCCUR_TIME': '', 'URL': '', 'CONF_WORD': ''}
+    pstmt = {'TITLE': '', 'INTRODUCTION': '', 'ORIGIN_VALUE': '', 'ORIGIN_NAME': '', 'OCCUR_TIME': '', 'URL': '', 'BROWSE_SIZE':'', 'COMMENT_SIZE':'', 'FETCH_TIME':'', 'LAST_UPDATE_TIME':'', 'THUMBSUP_SIZE':'', 'CONF_WORD': ''}
     pstmt['TITLE'] = art['title'][:40]
     pstmt['URL'] = art['url']
     pstmt['INTRODUCTION'] = art['info'][:400]
@@ -348,12 +348,18 @@ def Kafka_fun(art):
             'FAMILY:CONTENT': json.dumps(art['info'][:400]),
             'FAMILY:KEY_WORDS': json.dumps(conf_word)
             }
-    table.put(row=art['url'], data=data)  # 向表中传入数据
+    try:
+        table.put(row=art['url'], data=data)  # 向表中传入数据
+    except Exception as e:
+        print("hbase:%s"%str(e))
     # hbase---end
     msg = json.dumps(pstmt, ensure_ascii=False)
     print("------------------------------------------------------------------------------------")
     print(msg)
-    producer.send('postsarticles', msg.encode('utf-8'))
+    try:
+        producer.send('postsarticles', msg.encode('utf-8'))
+    except Exception as e:
+        print("kafka:%s"%str(e))
 
 
 # 以下为运行所用代码
