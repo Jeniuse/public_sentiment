@@ -51,6 +51,7 @@ def check_ip_list(ip_list):
 # 获取免费代理
 def get_ip_free():
     print('===================获取免费代理free_ip===================')
+    time.sleep(180)
     """ 从代理网站上获取代理"""
     url = 'http://www.xicidaili.com/wt'
     headers = {
@@ -97,13 +98,24 @@ def get_ip():
     """ 从代理网站上获取代理"""
     print('===================获取付费代理ip===================')
     url = 'http://webapi.http.zhimacangku.com/getip?num=5&type=1&pro=&city=0&yys=0&port=1&pack=37981&ts=0&ys=0&cs=0&lb=1&sb=0&pb=5&mr=2&regions='
+    url = 'http://webapi.http.zhimacangku.com/getip?num=3&type=2&pro=&city=0&yys=0&port=1&pack=67333&ts=0&ys=0&cs=0&lb=1&sb=0&pb=45&mr=1&regions='
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36 Edge/15.15063'
     }
     ip_list = []
     try:
         zm_resp = requests.get(url,timeout=5)
-        ip_json = zm_resp.text.split('\r\n')
+        ip_json = json.loads(zm_resp.text)
+        ip_data = ip_json['data']
+        if ip_json['code'] != 0:
+            print('===================付费代理ip===================')
+            print(ip_json['data'])
+            print(ip_json['msg'])
+            free_res = get_ip_free()
+            if free_res == True:
+                return True
+            else:
+                return False
         if len(ip_json)==1:
             print('===================付费代理ip已达上限===================')
             print(ip_json[0])
@@ -124,13 +136,14 @@ def get_ip():
         print("请求ip失败:",e)
         get_ip()
         return False
-    print("IP池ip个数为：%d"%(len(ip_json)-1))
-    for ip in ip_json:
+    print("IP池ip个数为：%d"%(len(ip_data)-1))
+    for ip in ip_data:
         if ip != "":
-            proxy = get_proxy(ip)
+            proxy = get_proxy("%s:%s"%(ip['ip'], ip['port']))
             ip_list.append(proxy)
     # 以下测试IP
     usefulIPlist = []
+    print(ip_list)
     for ip in ip_list:
         try:
             page = requests.get("http://www.baidu.com", headers=headers, proxies=ip, timeout=2)  # 测试用网站
@@ -209,6 +222,7 @@ def get_article(gzh,titleList):
                 itemList = []
                 while(page<=10):
                     print('爬取公众号====%s====文章==========第%d页'%(gzh, page))
+                    time.sleep(10)
                     itemList = get_data(ws_api.search_article(keyword, page=page), gzh)  # 得到数据，并转换数据
                     page = page+1
                     print("\n返回后文章列表长度:" + str(len(itemList)))
@@ -289,6 +303,7 @@ def run():
             continue
         else:
             title_list = article_list
+        time.sleep(20)
 
     # 字典记录数据
     tempdic = read_dic("./baiduspiderProject_new/baiduspider/jsonfile/sougou.json")
@@ -356,6 +371,7 @@ def Kafka_fun(art):
     msg = json.dumps(pstmt, ensure_ascii=False)
     print("------------------------------------------------------------------------------------")
     print(msg)
+    print("------------------------------------------------------------------------------------")
     try:
         producer.send('postsarticles', msg.encode('utf-8'))
     except Exception as e:
