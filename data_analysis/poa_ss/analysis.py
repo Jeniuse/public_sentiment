@@ -45,7 +45,11 @@ def basd_info_add(insert_sql, update_sql):
 
 # 检测时间
 def check_time(res,param_time):
-	split_len = len(param_time.split('-'))-1 # 时间-的个数
+	split_len = 0
+	try:
+		split_len = len(param_time.split('-'))-1 # 时间-的个数
+	except:
+		return "null"
 	# 时间处理
 	if len(param_time)<12:
 		if split_len==1:
@@ -120,7 +124,7 @@ def sendPartition(iter):
 					sql_basd += sql_content
 				insert_sql += sql_basd
 			check_ID_list.extend(record[2])
-			check_ID_list = set(check_ID_list)
+			check_ID_list = list(set(check_ID_list))
 		except Exception as e:
 			print(e)
 			export_log({"type":"Stitching pinjie sql","data":record[0]})
