@@ -15,6 +15,34 @@ from wechatsogou.exceptions import WechatSogouVcodeOcrException
 
 ws_cache = WechatCache()
 
+def get_verify_code(im, typeid):
+    print('===============验证码=================')
+    print(typeid)
+    verify_code = '****'
+    url = "http://op.juhe.cn/vercode/index"
+    encodestr = base64.b64encode(im)
+    params = {
+        "key":'a860b43d70a7a87a76bf4807c37ade9e',  #您申请到的APPKEY
+        "codeType":typeid,  #验证码的类型
+        "base64Str":encodestr,  #图片文件
+        "dtype":"",  #返回的数据的格式，json或xml，默认为json
+    }
+    resp_code = ""
+    try:
+        resp_code = requests.post(url, data=params, timeout=18)
+        result = resp_code.json()
+        error_code = result["error_code"]
+        if error_code == 0:  #成功请求
+            verify_code = result["result"]
+            print('verify_code:%s'%verify_code)
+        else:
+            print("error:%s:%s"%(result["error_code"],result["reason"]))
+    except requests.exceptions.ReadTimeout as e:
+        print('get_verify_code error: ', e)
+    except Exception as e:
+        print('get_verify_code error: ', e)
+        return verify_code
+    return verify_code
 
 def identify_image_callback_by_hand(img):
     """识别二维码
@@ -29,11 +57,14 @@ def identify_image_callback_by_hand(img):
     str
         验证码文字
     """
-    im = readimg(img)
-    im.show()
-    with open('1.jpg','wb') as fp:
-        fp.write(img)
-    code = input("please input code: ")
+    # im = readimg(img)
+    # im.show()
+    # with open('1.jpg','wb') as fp:
+    #     fp.write(img)
+    code = get_verify_code(img,1006)
+    if code == '****':
+        code = get_verify_code(img, 1004)
+    # code = input("please input code: ")
     return code
 
 
