@@ -82,12 +82,12 @@ class BaiduspiderPipeline(object):
 
     def Kafka_fun(self,item,origin):
         ###############################################################################
-        # global producer
+        global producer
         try:
             pstmt = {'TITLE':'','INTRODUCTION':'','ORIGIN_VALUE':'','ORIGIN_NAME':'','OCCUR_TIME':'','URL':'','CONF_WORD':''}
-            pstmt['TITLE']=item['title'][:40]
+            pstmt['TITLE']=item['title'][:30]
             pstmt['URL']=item['url']
-            pstmt['INTRODUCTION']=item['info'][:400]
+            pstmt['INTRODUCTION']=item['info'][:350]
             pstmt['OCCUR_TIME']=item['time']
             pstmt['ORIGIN_VALUE']='500010000000001'
             pstmt['ORIGIN_NAME']='论坛'
