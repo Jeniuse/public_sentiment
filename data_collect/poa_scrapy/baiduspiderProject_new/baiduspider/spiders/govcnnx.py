@@ -11,7 +11,8 @@ class hhtcsSpider(scrapy.Spider):
     allowed_domains = ['gdj.nx.gov.cn']
     start_urls = [
         "http://gdj.nx.gov.cn/nzcms_list_so.asp?keyword=%D6%B1%B2%A5%CE%C0%D0%C7&so=3&Page=1", # 直播卫星
-        "http://gdj.nx.gov.cn/nzcms_list_so.asp?keyword=%D6%D0%D0%C7%BE%C5%BA%C5&so=3&Page=1" # 中星九号
+        "http://gdj.nx.gov.cn/nzcms_list_so.asp?keyword=%D6%D0%D0%C7%BE%C5%BA%C5&so=3&Page=1", # 中星九号
+        "http://gdj.nx.gov.cn/nzcms_list_so.asp?keyword=%B7%F6%C6%B6%B9%A4%B3%CC&so=1&Submit2=%CB%D1%CB%F7%D2%BB%CF%C2" #扶贫工程
     ]
     allowed_timesup = 10  # 最多超过时限次数
     if(read_json.read_json(name)):
