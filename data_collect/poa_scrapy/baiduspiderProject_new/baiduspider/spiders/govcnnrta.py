@@ -12,7 +12,8 @@ class hhtcsSpider(scrapy.Spider):
     allowed_domains = ['www.nrta.gov.cn']
     start_urls = [
         "http://www.nrta.gov.cn/jrobot/search.do?webid=1&pg=12&p=1&tpl=&category=&q=%s"%"直播卫星",
-        "http://www.nrta.gov.cn/jrobot/search.do?webid=1&pg=12&p=1&tpl=&category=&q=%s"%"中星九号"
+        "http://www.nrta.gov.cn/jrobot/search.do?webid=1&pg=12&p=1&tpl=&category=&q=%s"%"中星九号",
+        "http://www.nrta.gov.cn/jrobot/search.do?webid=1&pg=12&p=1&tpl=&category=&q=%s" % "扶贫工程"
     ]
     allowed_timesup = 10  # 最多超过时限次数
     if(read_json.read_json(name)):
@@ -31,7 +32,6 @@ class hhtcsSpider(scrapy.Spider):
         for node in nodelist:#分析帖子信息
             try:
                 item['spidertime'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
-                item["title"] = node.xpath("./div[@class='jsearch-result-title']/a/text()").extract_first()
                 item["url"] = node.xpath("./div/div/div[@class='jsearch-result-url']/a/text()").extract_first()
                 item["urlId"] = item["url"].split('/')[-1].split('.')[0]
                 item["urlId"] = '%s_%s' % (self.name, item["urlId"])
@@ -47,6 +47,11 @@ class hhtcsSpider(scrapy.Spider):
                 res_child = child_page(item["url"])
                 item["info"] = res_child.xpath("//p/text()")
                 item["info"] = "".join(item["info"])
+                item["title"] = res_child.xpath("//td[@class='title']/text()")
+                item["title"] = "".join(item["title"])
+                item["title"] = item["title"].replace(' ','')
+                item["title"] = item["title"].replace('\r','')
+                item["title"] = item["title"].replace('\n', '')
             except:
                 item['IsFilter'] = False
 
