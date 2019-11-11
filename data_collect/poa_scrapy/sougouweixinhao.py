@@ -24,16 +24,16 @@ def check_ip(ips):
     # 以下测试IP
     try:
         requests.get("http://www.baidu.com", headers=headers, proxies=ips, timeout=2)  # 测试用网站
-        print('停止2s.......................')
+        print('time sleep 2s.......................')
         time.sleep(2)
     except Exception as e:
-        print("Ip已失效:",e)
+        print("Ip Invalid:",e)
         usefulIPlist = read_Proxies()[1:]
         writeProxies(usefulIPlist)
 
 # 检测ip是否失效
 def check_ip_list(ip_list):
-    print('===================检测ip===================')
+    print('===================check ip===================')
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36 Edge/15.15063'
     }
@@ -50,7 +50,7 @@ def check_ip_list(ip_list):
 
 # 获取免费代理
 def get_ip_free():
-    print('===================获取免费代理free_ip===================')
+    print('===================get free_ip===================')
     time.sleep(180)
     """ 从代理网站上获取代理"""
     url = 'http://www.xicidaili.com/wt'
@@ -61,11 +61,11 @@ def get_ip_free():
     try:
         page = requests.get(url, headers=headers,timeout=5)
     except Exception as e:
-        print("请求ip失败：",e)
+        print("require ip failed:",e)
         return False
     soup = BeautifulSoup(page.text, 'lxml')
     ul_list = soup.find_all('tr', limit=15)  # limit=30
-    print("IP池ip个数为：%d"%len(ul_list))
+    print("IP POOL ip length:%d"%len(ul_list))
     for i in range(2, len(ul_list)):
         line = ul_list[i].find_all('td')
         ip = line[1].text
@@ -79,24 +79,24 @@ def get_ip_free():
     for ip in ip_list:
         try:
             page = requests.get("http://www.baidu.com", headers=headers, proxies=ip, timeout=2)  # 测试用网站
-            print("ip可用")
+            print("Ip validable")
             usefulIPlist.append(ip)
         except:
-            print("Ip不可用")
+            print("Ip not validable")
     if (len(usefulIPlist) == 0):
-        print("ip获取失败")
+        print("get ip failed")
         get_ip_free()
     else:
-        print("可用ip个数为：%d"%len(usefulIPlist))
+        print("IP POOL ip length:%d"%len(usefulIPlist))
         ratio = len(usefulIPlist)/15
-        print('==========================ip可用率:%s'%str(ratio))
+        print('==========================ip validable percent:%s'%str(ratio))
         writeProxies(usefulIPlist)
     return True
 
 # 获取付费代理
 def get_ip():
     """ 从代理网站上获取代理"""
-    print('===================获取付费代理ip===================')
+    print('===================get pay agent ip===================')
     url = 'http://webapi.http.zhimacangku.com/getip?num=5&type=1&pro=&city=0&yys=0&port=1&pack=37981&ts=0&ys=0&cs=0&lb=1&sb=0&pb=5&mr=2&regions='
     url = 'http://webapi.http.zhimacangku.com/getip?num=3&type=2&pro=&city=0&yys=0&port=1&pack=67333&ts=0&ys=0&cs=0&lb=1&sb=0&pb=45&mr=1&regions='
     headers = {
@@ -108,7 +108,7 @@ def get_ip():
         ip_json = json.loads(zm_resp.text)
         ip_data = ip_json['data']
         if ip_json['code'] != 0:
-            print('===================付费代理ip===================')
+            print('===================pay agent ip===================')
             print(ip_json['data'])
             print(ip_json['msg'])
             free_res = get_ip_free()
@@ -117,7 +117,7 @@ def get_ip():
             else:
                 return False
         if len(ip_json)==1:
-            print('===================付费代理ip已达上限===================')
+            print('===================pay agent ip upper limit has been reached===================')
             print(ip_json[0])
             free_res = get_ip_free()
             if free_res == True:
@@ -125,7 +125,7 @@ def get_ip():
             else:
                 return False
     except requests.exceptions.ConnectionError as e:
-        print('无法访问')
+        print('can not access')
         print(e)
         free_res = get_ip_free()
         if free_res == True:
@@ -133,10 +133,10 @@ def get_ip():
         else:
             return False
     except Exception as e:
-        print("请求ip失败:",e)
+        print("require ip failed:",e)
         get_ip()
         return False
-    print("IP池ip个数为：%d"%(len(ip_data)-1))
+    print("IP POOL ip length:%d"%(len(ip_data)-1))
     for ip in ip_data:
         if ip != "":
             proxy = get_proxy("%s:%s"%(ip['ip'], ip['port']))
@@ -147,17 +147,17 @@ def get_ip():
     for ip in ip_list:
         try:
             page = requests.get("http://www.baidu.com", headers=headers, proxies=ip, timeout=2)  # 测试用网站
-            print("ip可用：%s"%ip)
+            print("ip validable:%s"%ip)
             usefulIPlist.append(ip)
         except Exception as e:
-            print("Ip不可用:",e)
+            print("Ip not validable:",e)
     if (len(usefulIPlist) == 0):
-        print("ip获取失败,重新获取")
+        print("get ip failed,reget")
         get_ip()
     else:
-        print("可用ip个数为：%d"%len(usefulIPlist))
+        print("valid ip length:%d"%len(usefulIPlist))
         ratio = len(usefulIPlist)/5
-        print('==========================ip可用率:%s'%str(ratio))
+        print('==========================ip validable percent:%s'%str(ratio))
         writeProxies(usefulIPlist)
     return True
 
@@ -172,7 +172,7 @@ def writeProxies(proxies):
     f = open("proxies.json", "w", encoding='UTF-8')
     content = json.dumps(proxies, ensure_ascii=False)
     f.write(content)
-    print("写入完成")
+    print("write IP finish")
     f.close()
 
 def read_Proxies():
@@ -180,12 +180,12 @@ def read_Proxies():
         f = open('proxies.json', "r", encoding='UTF-8')  # 读取josn中的上次的链接
         return json.load(f)  # 将数据存入列表
     except Exception as e:
-        print("文件不存在")
+        print("file not found")
         print(e)
         return []
 
 def get_data(listDic,gzh):
-    print("获取列表长度:" + str(len(listDic)))
+    print("get article list length:" + str(len(listDic)))
     itemList = []
     for art in listDic:
         article = art['article']
@@ -214,18 +214,18 @@ def get_article(gzh,titleList):
     page = 1
     while(1):
         iplist = read_Proxies()
-        print('读取ip============================================')
+        print('read ip============================================')
         for ip in iplist:
             try:
                 # captcha_break_time:验证码重输次数
                 ws_api = wechatsogou.WechatSogouAPI(proxies=ip, timeout=10, captcha_break_time=2)
                 itemList = []
                 while(page<=10):
-                    print('爬取公众号====%s====文章==========第%d页'%(gzh, page))
+                    print('scrapy====%s====article==========page %d'%(gzh, page))
                     time.sleep(10)
                     itemList = get_data(ws_api.search_article(keyword, page=page), gzh)  # 得到数据，并转换数据
                     page = page+1
-                    print("\n返回后文章列表长度:" + str(len(itemList)))
+                    print("\nreturn article list length:" + str(len(itemList)))
                     for art in itemList:
                         print(art['title'])
                         unique = art['title'] + '/' + art['time']
@@ -235,18 +235,18 @@ def get_article(gzh,titleList):
                             print('kafka')
                             Kafka_fun(art)
                             deltaList.append(art['title'])
-                print("下一组文章")
+                print("next article list")
                 isSuccess = True
                 break
             except Exception as e:
-                print("文章访问出错,检测ip是否失效")
+                print("read article error,check ip is validable?")
                 print(e)
                 check_ip(ip)
                 continue
         if (isSuccess == False):
             count = count + 1
             if (count > maxConut):
-                print("尽力了，文章被封锁了！")  # 封锁后直接返回已爬取的
+                print("OK，article locked！")  # 封锁后直接返回已爬取的
                 return False
             else:
                 get_ip()  # 得到代理IP列表
@@ -273,7 +273,7 @@ def run():
     ip_list = read_Proxies()
     if len(ip_list)==0:
         if (get_ip() == False):
-            print("无法获得代理")
+            print("can not get IP")
             return
     else:
         check_ip_list(ip_list)
@@ -295,10 +295,10 @@ def run():
         except:
             titleList_key = []
         #获得公众号文章
-        print('爬取公众号====%s====文章'%(gzh))
+        print('scrapy weixin====%s====article'%(gzh))
         article_list = get_article(gzh,titleList_key)
         if(article_list==False):
-            print('失败停止停止5s=============================================')
+            print('failed time sleep 5s=============================================')
             time.sleep(5)#失败停止5s
             continue
         else:
