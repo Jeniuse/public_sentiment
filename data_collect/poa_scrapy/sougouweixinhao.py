@@ -227,7 +227,7 @@ def get_article(gzh,titleList):
                     time.sleep(10)
                     itemList = get_data(ws_api.search_article(keyword, page=page), gzh)  # 得到数据，并转换数据
                     if itemList==False:
-                        continue
+                        break
                     page = page+1
                     print("\nreturn article list length:" + str(len(itemList)))
                     for art in itemList:
