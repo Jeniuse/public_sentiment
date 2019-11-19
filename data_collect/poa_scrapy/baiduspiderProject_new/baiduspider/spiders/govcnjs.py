@@ -32,7 +32,6 @@ class hhtcsSpider(scrapy.Spider):
         for node in nodelist:#分析帖子信息
             try:
                 item['spidertime'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
-                item["title"] = node.xpath("./div[2]/a/text()").extract_first()
                 item["url"] = node.xpath("./div[3]/div[2]/div/a/text()").extract_first()
                 item["urlId"] = item["url"].split('/')[-1].split('.')[0]
                 item["urlId"] = '%s_%s' % (self.name, item["urlId"])
@@ -47,6 +46,9 @@ class hhtcsSpider(scrapy.Spider):
                 res_child = child_page(item["url"])
                 item["info"] = res_child.xpath("//div[@id = 'zoom']/p/text() | //div[@id = 'zoom']/p/span/text() ")
                 item["info"] = "".join(item["info"])
+                item["title"] = res_child.xpath("//title/text()")
+                item["title"] = "".join(item["title"])
+                item["title"] = item["title"].split(' ')[-1]
             except:
                 item['IsFilter'] = False
 

@@ -32,7 +32,6 @@ class hhtcsSpider(scrapy.Spider):
         for node in nodelist:#分析帖子信息
             try:
                 item['spidertime'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
-                item["title"] = node.xpath("./div[1]/a/div/text()").extract_first()
                 item["url"] = node.xpath("./div[@class='com-title']/a/@href").extract_first()
                 item["urlId"] = item["url"].split('/')[-1].split('.')[0]
                 item["urlId"] = '%s_%s' % (self.name, item["urlId"])
@@ -42,6 +41,8 @@ class hhtcsSpider(scrapy.Spider):
                 # item["info"] = res_child.xpath("//div[@id='j-show-body']/div/div/p/span/voice/text()")
                 item["info"] = res_child.xpath("//span/text()")
                 item["info"] = "".join(item["info"])
+                item["title"] = res_child.xpath("//div[@class='main_content']/h2/text()")
+                item["title"] = "".join(item["title"])
                 # 判断这个帖子是否符合时间
                 if TimeMarch.time_March(item["time"],self.default_scope_day):
                     item["IsFilter"] = True

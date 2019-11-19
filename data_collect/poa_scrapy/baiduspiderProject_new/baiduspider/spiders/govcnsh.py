@@ -12,7 +12,8 @@ class hhtcsSpider(scrapy.Spider):
     # allowed_domains = ['whlyj.sh.gov.cn']
     start_urls = [
         "http://searchgov1.eastday.com/searchwgj/search.ashx?q=%D6%B1%B2%A5%CE%C0%D0%C7&page=1",
-        "http://searchgov1.eastday.com/searchwgj/search.ashx?q=%D6%D0%D0%C7%BE%C5%BA%C5&page=1"
+        "http://searchgov1.eastday.com/searchwgj/search.ashx?q=%D6%D0%D0%C7%BE%C5%BA%C5&page=1",
+        "http://searchgov1.eastday.com/searchwgj/search.ashx?q=%B7%F6%C6%B6%B9%A4%B3%CC&page=1"
     ]
     allowed_timesup = 10  # 最多超过时限次数
     if(read_json.read_json(name)):
