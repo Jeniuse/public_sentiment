@@ -75,7 +75,6 @@ def get_ip_free():
         ip_list.append(proxy)
     # 以下测试IP
     usefulIPlist = []
-    ip_list.append({"http": "101.37.77.162:8000", "https": "101.37.77.162:8000"})
     for ip in ip_list:
         try:
             page = requests.get("http://www.baidu.com", headers=headers, proxies=ip, timeout=2)  # 测试用网站
