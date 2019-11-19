@@ -216,7 +216,6 @@ def get_article(gzh,titleList):
     page = 1
     while(1):
         while(page<=10):
-            get_ip()  # 得到代理IP列表
             iplist = read_Proxies()
             print('read ip============================================')
             for ip in iplist:
