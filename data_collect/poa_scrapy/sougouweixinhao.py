@@ -185,6 +185,8 @@ def read_Proxies():
 
 def get_data(listDic,gzh):
     print("get article list length:" + str(len(listDic)))
+    if len(listDic)==0:
+        return False
     itemList = []
     for art in listDic:
         article = art['article']
@@ -224,6 +226,8 @@ def get_article(gzh,titleList):
                     print('scrapy====%s====article==========page %d'%(gzh, page))
                     time.sleep(10)
                     itemList = get_data(ws_api.search_article(keyword, page=page), gzh)  # 得到数据，并转换数据
+                    if itemList==False:
+                        continue
                     page = page+1
                     print("\nreturn article list length:" + str(len(itemList)))
                     for art in itemList:
