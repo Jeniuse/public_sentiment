@@ -215,10 +215,10 @@ def get_article(gzh,titleList):
     isSuccess = False
     page = 1
     while(1):
-        get_ip()  # 得到代理IP列表
-        iplist = read_Proxies()
-        print('read ip============================================')
         while(page<=10):
+            get_ip()  # 得到代理IP列表
+            iplist = read_Proxies()
+            print('read ip============================================')
             for ip in iplist:
                 try:
                     # captcha_break_time:验证码重输次数
