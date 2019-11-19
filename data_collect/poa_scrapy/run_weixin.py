@@ -19,7 +19,7 @@ def main():
        t.start()
        t.join()
        print(" weixin 执行完成一轮")
-       time.sleep(10)
+       time.sleep(300)
 
     fp.close()
     sys.stderr = stderr
