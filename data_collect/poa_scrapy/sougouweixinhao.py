@@ -241,6 +241,7 @@ def get_article(gzh,titleList):
                             Kafka_fun(art)
                             deltaList.append(art['title'])
                     print("next article list")
+                    isSuccess == True
                     break
                 except Exception as e:
                     print("read article error,check ip is validable?")
