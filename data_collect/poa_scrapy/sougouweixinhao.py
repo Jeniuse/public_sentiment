@@ -215,19 +215,20 @@ def get_article(gzh,titleList):
     isSuccess = False
     page = 1
     while(1):
+        get_ip()  # 得到代理IP列表
         iplist = read_Proxies()
         print('read ip============================================')
-        for ip in iplist:
-            try:
-                # captcha_break_time:验证码重输次数
-                ws_api = wechatsogou.WechatSogouAPI(proxies=ip, timeout=10, captcha_break_time=2)
-                itemList = []
-                while(page<=10):
+        while(page<=10):
+            for ip in iplist:
+                try:
+                    # captcha_break_time:验证码重输次数
+                    ws_api = wechatsogou.WechatSogouAPI(proxies=ip, timeout=10, captcha_break_time=2)
+                    itemList = []
                     print('scrapy====%s====article==========page %d'%(gzh, page))
                     time.sleep(10)
                     itemList = get_data(ws_api.search_article(keyword, page=page), gzh)  # 得到数据，并转换数据
                     if itemList==False:
-                        break
+                        continue
                     page = page+1
                     print("\nreturn article list length:" + str(len(itemList)))
                     for art in itemList:
@@ -239,24 +240,23 @@ def get_article(gzh,titleList):
                             print('kafka')
                             Kafka_fun(art)
                             deltaList.append(art['title'])
-                print("next article list")
-                isSuccess = True
-                break
-            except Exception as e:
-                print("read article error,check ip is validable?")
-                print(e)
-                check_ip(ip)
-                continue
-        if (isSuccess == False):
-            count = count + 1
-            if (count > maxConut):
-                print("OK，article locked！")  # 封锁后直接返回已爬取的
-                return False
+                    print("next article list")
+                    break
+                except Exception as e:
+                    print("read article error,check ip is validable?")
+                    print(e)
+                    check_ip(ip)
+                    continue
+            if (isSuccess == False):
+                count = count + 1
+                if (count > maxConut):
+                    print("OK，article locked！")  # 封锁后直接返回已爬取的
+                    return False
+                else:
+                    get_ip()  # 得到代理IP列表
+                    continue
             else:
-                get_ip()  # 得到代理IP列表
-                continue
-        else:
-            break
+                break
     print("Finish")
     return articleList
 
