@@ -197,6 +197,7 @@ def get_data(listDic,gzh):
             dic = {
                 'title': article['title'],
                 'info': article['abstract'],
+                # 'info': article['info'],
                 'time': t,
                 'url': article['url']
             }
