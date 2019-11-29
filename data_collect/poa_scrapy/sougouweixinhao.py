@@ -338,7 +338,7 @@ def Kafka_fun(art):
     global producer
     pstmt = {'TITLE': '', 'INTRODUCTION': '', 'ORIGIN_VALUE': '', 'ORIGIN_NAME': '', 'OCCUR_TIME': '', 'URL': '', 'BROWSE_SIZE':'', 'COMMENT_SIZE':'', 'FETCH_TIME':'', 'LAST_UPDATE_TIME':'', 'THUMBSUP_SIZE':'', 'CONF_WORD': ''}
     pstmt['TITLE'] = art['title'][:30]
-    pstmt['URL'] = art['url'][:450]
+    pstmt['URL'] = art['url']
     pstmt['INTRODUCTION'] = art['info'][:350]
     pstmt['OCCUR_TIME'] = art['time']
     pstmt['ORIGIN_VALUE'] = '500010000000002'
