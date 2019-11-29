@@ -24,8 +24,11 @@ class SimpleBaiduSpider(scrapy.Spider):
     def parse(self, response):
         timecount = 0  # 计数器
         html = str(response.text)
+        # 由于百度贴吧的帖子内容被注释，xpath方式无法取到数据  因此采用字符串处理方式取数据
+        # 也可以通过将数据转化为字典获取更为便捷   字典方式详见govcngd
         docs = html.split("t_con cleafix")[2:]
         item = BaiduspiderItem()
+        item["IsFilter"] = False
         isHasContent = False  # 判断此页中是否有合适的信息
         NextPageUrl = ''
         for doc in docs:
@@ -43,7 +46,17 @@ class SimpleBaiduSpider(scrapy.Spider):
                 item["title"] = title
                 doc = doc.split("创建时间",1)[1]
                 creattime = doc.split("\">", 1)[1].split('<', 1)[0]
-                item["time"] = "2019-%s"%creattime
+                if creattime.__contains__(':'):
+                    creattime = time.strftime('%Y-%m-%d', time.localtime(time.time()))
+                elif len(creattime.split('-')[0]) == 4:
+                    creattime = creattime + '-01'
+                elif len(creattime.split('-')[0]) == 1:
+                    creattime = '2019-0' + creattime
+                else:
+                    creattime = '2019-' + creattime
+                if len(creattime.split('-')[-1]) == 1:
+                    creattime = creattime[:-1] + '0' + creattime[-1]
+                item["time"] = creattime
                 doc = doc.split("threadlist_abs threadlist_abs_onlyline", 1)[1]
                 item["info"] = doc.split('>',1)[1].split('</div>',1)[0]
                 doc = doc.split("最后回复时间", 1)[1]
