@@ -19,6 +19,8 @@ def baiduspider():
     time.sleep(10)
     os.system("scrapy crawl govcnshanx")
     time.sleep(10)
+    os.system("scrapy crawl govcngs")
+    time.sleep(10)
 
 def hhtspider():
     os.system("scrapy crawl hht")
@@ -54,6 +56,8 @@ def jdwxspider():
     os.system("scrapy crawl govcnnmg")
     time.sleep(10)
     os.system("scrapy crawl govcnnx")
+    time.sleep(10)
+    os.system("scrapy crawl govcnnx2")
     time.sleep(10)
     os.system("scrapy crawl govcnqh")
     time.sleep(10)
