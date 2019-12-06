@@ -10,5 +10,6 @@ export PATH
 */1 * * * * /root/public_sentiment/update_keywords.sh
 */1 * * * * /root/public_sentiment/time_monitor.sh
 30 3 */6 * * /root/public_sentiment/restartss.sh
-40 3 */6 * * /root/public_sentiment/restartsw.sh
+40 3 */1 * * /root/public_sentiment/restartsw.sh
+40 15 */1 * * /root/public_sentiment/restartsw.sh
 
