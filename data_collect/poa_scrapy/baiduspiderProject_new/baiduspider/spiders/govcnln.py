@@ -37,6 +37,8 @@ class hhtcsSpider(scrapy.Spider):
                 item["urlId"] = item["url"].split('.')[0].split('/')[-1]
                 item["urlId"] = '%s_%s' % (self.name, item["urlId"])
                 item["time"] = node.xpath("./p[2]/text()").extract_first()
+                item["time"] = item["time"].split('时间：')[-1].split(' ')[0]
+                item["time"] = item["time"].replace('.','-')
                 item["info"] = node.xpath("./p[1]/text()").extract_first()
                 # item["info"] = node.xpath("./p[1]/text()").extract_first()
                 # 判断这个帖子是否符合时间
