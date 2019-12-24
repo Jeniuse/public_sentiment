@@ -57,7 +57,7 @@ class hhtcsSpider(scrapy.Spider):
             page_num = response.url.split('page=')[-1]
             print('\n第***********************************%s***********************************页\n'%page_num)
             page_num = int(page_num)+1
-            NextPageUrl = "http://was.jl.gov.cn/was5/web/search?presearchword=&searchword1=&channelid=193132&StringEncoding=UTF-8&searchword=%s&page=%s"%(str(page_num),keyword)
+            NextPageUrl = "http://was.jl.gov.cn/was5/web/search?presearchword=&searchword1=&channelid=193132&StringEncoding=UTF-8&searchword=%s&page=%s"%(keyword,str(page_num))
             print(NextPageUrl)
             yield scrapy.Request(NextPageUrl,callback = self.parse,dont_filter=True)
         else:

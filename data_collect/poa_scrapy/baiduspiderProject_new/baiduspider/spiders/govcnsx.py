@@ -45,8 +45,10 @@ class hhtcsSpider(scrapy.Spider):
                     item["IsFilter"] = False
                     timecount = timecount + 1
                 res_child = child_page(item["url"])
-                item["info"] = res_child.xpath("//div[@id = 'Zoom']/p/text() | //div[@id='Zoom']/text()")
+                item["info"] = res_child.xpath("//p[@class = 'p0']/text() | //div[@id='Zoom']/text() | //div[@id='Zoom']/p/text()")
                 item["info"] = "".join(item["info"])
+                item["title"] = res_child.xpath("//div[@class='detalsinfo_title']/text()")
+                item["title"] = "".join(item["title"])
                 # item["info"] = bytearray.fromhex(''.join(item["info"].split("\\x"))).decode()
             except:
                 item['IsFilter'] = False

@@ -26,8 +26,8 @@ class hhtcsSpider(scrapy.Spider):
             formdata={
                 'keywords': '直播卫星',
                 'page': '1',  # 这里不能给int类型的1，requests模块中可以
-                'time_from': '1537703217',
-                'time_to':'1569239217'
+                # 'time_from': '1537703217',
+                # 'time_to':'1569239217'
             },
         callback = self.parse
         )
@@ -36,8 +36,8 @@ class hhtcsSpider(scrapy.Spider):
             formdata={
                 'keywords': '扶贫工程',
                 'page': '1',
-                'time_from': '1537703853',
-                'time_to': '1569239853'
+                # 'time_from': '1537703853',
+                # 'time_to': '1569239853'
             },
             callback=self.parse
         )

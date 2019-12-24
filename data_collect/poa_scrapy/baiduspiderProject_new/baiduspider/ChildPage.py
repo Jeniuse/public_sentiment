@@ -6,7 +6,7 @@ def ChildPage(childUrl,spider):
     root = etree.HTML(response.content)
     if spider== '2' or spider=='1':
         text = root.xpath("//td[@class='t_f']/text()")  # 第一个节点
-        strs = text[0]
+        strs = "".join(text)
         s = str(strs)  # 简介内容
         if (len(s) == 2):  # 如果为空字符串，再处理,还有点问题
             list_text = root.xpath("//td[@class='t_f']//text()")

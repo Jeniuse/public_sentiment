@@ -11,9 +11,9 @@ class hhtcsSpider(scrapy.Spider):
     name = 'govcnah'
     allowed_domains = ['gdj.ah.gov.cn']
     start_urls = [
-        "http://gdj.ah.gov.cn/isearch.php?keytype=1&keycontent=%D6%B1%B2%A5%CE%C0%D0%C7&StartPage=0", #直播卫星
-        "http://gdj.ah.gov.cn/isearch.php?keytype=1&keycontent=%B7%F6%C6%B6%B9%A4%D7%F7&StartPage=0", #中星九号
-        "http://gdj.ah.gov.cn/isearch.php?keytype=1&keycontent=%D6%D0%D0%C7%BE%C5%BA%C5&StartPage=0"  #扶贫工程
+        "http://gdj.ah.gov.cn/site/search/49631961?keywords=%s&pageIndex=1&pageSize=10"%"直播卫星", #
+        "http://gdj.ah.gov.cn/site/search/49631961?keywords=%s&pageIndex=1&pageSize=10"%"中星九号", #中星九号
+        "http://gdj.ah.gov.cn/site/search/49631961?keywords=%s&pageIndex=1&pageSize=10"%"扶贫工程"  #扶贫工程
     ]
     allowed_timesup = 10  # 最多超过时限次数
     if(read_json.read_json(name)):
@@ -22,7 +22,7 @@ class hhtcsSpider(scrapy.Spider):
         default_scope_day = 30 #增量爬取时限
 
     def parse(self, response):
-        nodelist = response.xpath("//div[@style='background:#FFF;padding:5px;width:100%']")#得到一页中的所有帖子
+        nodelist = response.xpath("//div[@class='right ssy_rightbar clearfix']/ul")#得到一页中的所有帖子
         nodelist = [] if nodelist==None else nodelist
         item = BaiduspiderItem()
         item = inititem(item)
@@ -32,17 +32,13 @@ class hhtcsSpider(scrapy.Spider):
         for node in nodelist:#分析帖子信息
             try:
                 item['spidertime'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
-                item["title"] = node.xpath("./a/text()").extract()
+                item["title"] = node.xpath("./li[@class='search-title']/a/text()").extract()
                 item["title"] = "".join(item["title"])
-                item["url"] = node.xpath("./a/@href").extract_first()
-                item["url"] = 'http://gdj.ah.gov.cn/%s'%item["url"]
-                item["urlId"] = item["url"].split('id=')[-1]
+                item["url"] = node.xpath("./li[@class='search-title']/a/@href").extract_first()
+                item["urlId"] = item["url"].split('/')[-1].split('.')[0]
                 item["urlId"] = '%s_%s' % (self.name, item["urlId"])
-                item["time"] = node.xpath("./p[2]/span[2]/text()").extract_first()
-                if item["time"] is not None:
-                    item["time"] = str(item["time"]).replace(' ','')
-                    item["time"] = item["time"][0:10]
-                # item["time"] = item["time"][0].split(' ')[0]
+                item["time"] = node.xpath("//span[@class='date']/text()").extract_first()
+
                 # 判断这个帖子是否符合时间
                 if TimeMarch.time_March(item["time"],self.default_scope_day):
                     item["IsFilter"] = True
@@ -50,20 +46,18 @@ class hhtcsSpider(scrapy.Spider):
                     item["IsFilter"] = False
                     timecount = timecount + 1
                 res_child = child_page(item["url"])
-                print(res_child)
-                item["info"] = res_child.xpath("//div[@id = 'Zoom']/p/text() | //div[@id = 'Zoom']/p/font/text() | //div[@id = 'Zoom']/text() | //div[@id = 'Zoom']/font/text() | //div[@id = 'Zoom']/p/span/text()")
+                item["info"] = res_child.xpath("//div[@class = 'wzcon j-fontContent clearfix']/p/text() | //div[@class='con_main']//td/text() | //div[@class='desc']//span/text() | //div[@id = 'Zoom']/font/text() | //div[@id = 'Zoom']/p/span/text()")
                 item["info"] = "".join(item["info"])
             except:
                 item['IsFilter'] = False
 
             yield item
         if (len(nodelist)!=0) and (timecount<self.allowed_timesup):
-            keyword = response.url.split('keycontent=')[1].split('&')[0]
-            page_num = response.url.split('StartPage=')[1]
-            page_num = int(page_num)/15
+            keyword = response.url.split('keywords=')[1].split('&')[0]
+            page_num = response.url.split('pageIndex=')[1].split('&')[0]
             print('\n第***********************************%s***********************************页\n'%page_num)
-            page_num = int(page_num) * 15 + 15
-            NextPageUrl = "http://gdj.ah.gov.cn/isearch.php?keytype=1&keycontent=%s&StartPage=%s"%(str(page_num),keyword)
+            page_num = int(page_num)+1
+            NextPageUrl = "http://gdj.ah.gov.cn/site/search/49631961?keywords=%s&pageIndex=%s&pageSize=10"%(keyword,str(page_num))
             print(NextPageUrl)
             yield scrapy.Request(NextPageUrl,callback = self.parse)
         else:

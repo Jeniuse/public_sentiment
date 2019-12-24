@@ -11,9 +11,9 @@ class hhtcsSpider(scrapy.Spider):
     name = 'govcnbj'
     allowed_domains = ['gdj.beijing.gov.cn']
     start_urls = [
-        "http://so.kaipuyun.cn/s?q=1&qt=%s&siteCode=N000005664&page=1"%"直播卫星",
-        "http://so.kaipuyun.cn/s?q=1&qt=%s&siteCode=N000005664&page=1"%"中星九号",
-        "http://so.kaipuyun.cn/s?q=1&qt=%s&siteCode=N000005664&page=1" % "扶贫工程"
+        "http://so.kaipuyun.cn/s?q=1&qt=%s&timeOption=1&days=30&pageSize=10&siteCode=N000005664&docQt=&page=1"%"直播卫星",
+        "http://so.kaipuyun.cn/s?q=1&qt=%s&timeOption=1&days=30&pageSize=10&siteCode=N000005664&docQt=&page=1"%"中星九号",
+        "http://so.kaipuyun.cn/s?q=1&qt=%s&timeOption=1&days=30&pageSize=10&siteCode=N000005664&docQt=&page=1"%"扶贫工程"
     ]
     allowed_timesup = 10  # 最多超过时限次数
     if(read_json.read_json(name)):

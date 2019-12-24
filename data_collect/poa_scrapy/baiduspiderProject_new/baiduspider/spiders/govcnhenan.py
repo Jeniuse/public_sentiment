@@ -31,6 +31,7 @@ class hhtcsSpider(scrapy.Spider):
         timecount = 0  # 计数器
         for node in nodelist:#分析帖子信息
             try:
+                item['spidertime'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
                 item["title"] = node.xpath("./@title").extract_first()
                 item["url"] = node.xpath("./@href").extract_first()
                 item["url"] = 'http://www.hnppb.gov.cn%s'%item["url"]

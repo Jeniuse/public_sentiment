@@ -36,7 +36,7 @@ class hhtcsSpider(scrapy.Spider):
                 item["urlId"] = item["url"].split('/')[-1].split('.')[0]
                 item["urlId"] = '%s_%s' % (self.name, item["urlId"])
                 item["time"] = node.xpath("./div[3]/div[2]/a/span/text()").extract_first()
-                # item["time"] = time.strftime("%Y-%m-%d", time.strptime(item["time"].split(' ')[0], "%Y年%m月%d日"))
+                item["time"] = time.strftime("%Y-%m-%d", time.strptime(item["time"].split(' ')[0], "%Y年%m月%d日"))
                 # 判断这个帖子是否符合时间
                 if TimeMarch.time_March(item["time"],self.default_scope_day):
                     item["IsFilter"] = True
