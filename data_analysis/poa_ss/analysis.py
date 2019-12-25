@@ -23,15 +23,15 @@ def update_keywords_fromtxt():
 # 批量插入数据库
 def basd_info_add(insert_sql, update_sql):
 	# 更新
-	if update_sql!="":
+	if update_sql_list!="":
 		try:
 			with open('update_basd_sql.txt','w',encoding= 'utf8') as fp:
-				fp.write(update_sql)
+				fp.write(json.dumps(update_sql_list,ensure_ascii=False))
 			os.system('python3 update_basd.py > sql_check.txt')
 			print('update')
-			# print(update_sql)
+			# print(update_sql_list)
 		except Exception as e:
-			export_log({"type":"updatesql","data":update_sql,"exception":str(e)})
+			export_log({"type":"updatesql","data":update_sql_list,"exception":str(e)})
 	# 存储
 	if insert_sql != 'insert all select 1 from dual':
 		try:
@@ -75,6 +75,7 @@ def check_time(res,param_time):
 
 # SQL拼接
 def sendPartition(iter):
+	print(update_keywords_fromtxt())
 	insert_sql = 'insert all '
 	delete_sql = ''
 	check_ID_list = []
@@ -102,39 +103,53 @@ def sendPartition(iter):
 			comment_size = 'null' if res['COMMENT_SIZE'] == None else str(res['COMMENT_SIZE'])
 			# 点赞量，如果无法爬取到，置空
 			thumbsup_size = 'null' if res['THUMBSUP_SIZE'] == None else str(res['THUMBSUP_SIZE'])
-			# 简介为空的情况
-			if res['INTRODUCTION'] != '':
-				res['TITLE'] = res['TITLE'].replace('\'','"')
-				res['INTRODUCTION'] = res['INTRODUCTION'].replace('\'','"')
-				sql_content = ",'"+res['TITLE']+"','"+res['INTRODUCTION']+"','"+res['URL']+"',"+occur_time+","+res['ORIGIN_VALUE']+",'"+res['ORIGIN_NAME']+"'"
-				sql_content += ","+browse_size+","+comment_size+","+thumbsup_size+","+fetch_time+","+last_update_time+") "
-			else:
-				if res['ORIGIN_VALUE'] == '500010000000002':
-					export_log({"type":"no INTRODUCTION","data":res})
+			check_ID_list = record[2] # 获取重复ID
+			if len(check_ID_list)==0 : # 没有重复ID，新增
+				# 简介为空的情况
+				if res['INTRODUCTION'] != '':
+					res['TITLE'] = res['TITLE'].replace('\'','"')
+					res['INTRODUCTION'] = res['INTRODUCTION'].replace('\'','"')
+					sql_content = ",'"+res['TITLE']+"','"+res['INTRODUCTION']+"','"+res['URL']+"',"+occur_time+","+res['ORIGIN_VALUE']+",'"+res['ORIGIN_NAME']+"'"
+					sql_content += ","+browse_size+","+comment_size+","+thumbsup_size+","+fetch_time+","+last_update_time+") "
 				else:
-					export_log({"type":"no Reading permissions","data":res})
-			if sql_content != "":
-				# 拼接内容的sql，拼接关键字
-				sql_basd = ""
-				key_match = record[1]
-				# ('爬虫内容', [('2', '测试', '测试,test', '测试'), ('1', '户户通', '户户通,恶意,安装', '户户通')])
-				for km in key_match:
-					sql_basd += "into BASE_ANALYSIS_SENTIMENT_DETAIL(PID,NAME,MAIN_WORD,key_WORD,TITLE,INTRODUCTION,URL,OCCUR_TIME,ORIGIN_VALUE,ORIGIN_NAME,BROWSE_SIZE,COMMENT_SIZE,THUMBSUP_SIZE,FETCH_TIME,LAST_UPDATE_TIME) "
-					sql_basd += "values("+str(km[0])+",'"+km[1]+"','"+km[2]+"','"+km[3]+"'"
-					sql_basd += sql_content
-				insert_sql += sql_basd
-			check_ID_list.extend(record[2])
-			check_ID_list = list(set(check_ID_list))
+					if res['ORIGIN_VALUE'] == '500010000000002':
+						export_log({"type":"no INTRODUCTION","data":res})
+					else:
+						export_log({"type":"no Reading permissions","data":res})
+				if sql_content != "":
+					# 拼接内容的sql，拼接关键字
+					sql_basd = ""
+					key_match = record[1]
+					# ('爬虫内容', [('2', '测试', '测试,test', '测试'), ('1', '户户通', '户户通,恶意,安装', '户户通')])
+					for km in key_match:
+						sql_basd += "into BASE_ANALYSIS_SENTIMENT_DETAIL(PID,NAME,MAIN_WORD,key_WORD,TITLE,INTRODUCTION,URL,OCCUR_TIME,ORIGIN_VALUE,ORIGIN_NAME,BROWSE_SIZE,COMMENT_SIZE,THUMBSUP_SIZE,FETCH_TIME,LAST_UPDATE_TIME) "
+						sql_basd += "values("+str(km[0])+",'"+km[1]+"','"+km[2]+"','"+km[3]+"'"
+						sql_basd += sql_content
+					insert_sql += sql_basd
+			else: # 有重复数据，更新
+				for basdID in check_ID_list:
+					res['TITLE'] = res['TITLE'].replace('\'','"')
+					res['INTRODUCTION'] = res['INTRODUCTION'].replace('\'','"')
+					update_content = "" # 更新内容部分的sql
+					update_content += "update BASE_ANALYSIS_SENTIMENT_DETAIL "
+					update_content += "set TITLE='"+res['TITLE']+"' "
+					if res['INTRODUCTION'] != '':
+						update_content += "INTRODUCTION='"+res['INTRODUCTION']+"' "
+					update_content += "OCCUR_TIME="+occur_time+" "
+					update_content += "BROWSE_SIZE="+browse_size+" "
+					update_content += "COMMENT_SIZE="+comment_size+" "
+					update_content += "THUMBSUP_SIZE="+thumbsup_size+" "
+					update_content += "FETCH_TIME="+fetch_time+" "
+					update_content += "LAST_UPDATE_TIME="+last_update_time+" "
+					update_content += "where ID="+basdID
+					update_sql_list.append(update_content)
 		except Exception as e:
 			print(e)
 			export_log({"type":"Stitching pinjie sql","data":record[0]})
 	insert_sql += "select 1 from dual"
-	# delete
-	if len(check_ID_list)!=0:
-		delete_sql = 'delete from BASE_ANALYSIS_SENTIMENT_DETAIL where ID in (%s)'%(','.join(check_ID_list))
 	print(insert_sql)
 	if b:
-		basd_info_add(insert_sql, delete_sql)
+		basd_info_add(insert_sql, update_sql_list)
 	
 # 检查是否有重复,有重复返回ID列表，无重复返回空列表
 def check_sentence(http_url):
