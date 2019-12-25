@@ -7,6 +7,7 @@ import happybase
 from kafka import KafkaProducer   #引入包，如果你在自己的电脑上跑，得先安装kafka
 from oraclepool import OrclPool
 import jieba
+os.environ['NLS_LANG'] = 'SIMPLIFIED CHINESE_CHINA.UTF8'
 global producer
 class BaiduspiderPipeline(object):
     #打开hbase
