@@ -21,7 +21,7 @@ def update_keywords_fromtxt():
 	return keywords
 
 # 批量插入数据库
-def basd_info_add(insert_sql, update_sql):
+def basd_info_add(insert_sql, update_sql_list):
 	# 更新
 	if update_sql_list!="":
 		try:
