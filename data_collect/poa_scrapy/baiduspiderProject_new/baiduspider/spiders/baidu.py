@@ -16,10 +16,7 @@ class SimpleBaiduSpider(scrapy.Spider):
     allowed_domains = ['tieba.baidu.com']
     start_urls = ['https://tieba.baidu.com/f?kw=%s&ie=utf-8&pn=0'%keyword]
     allowed_timesup = 10  # 最多超过时限次数
-    if(read_json.read_json(name)):
-        default_scope_day = 50 #首次爬取时限
-    else:
-        default_scope_day = 30 #增量爬取时限
+    default_scope_day = 60 #首次爬取时限
 
     def parse(self, response):
         timecount = 0  # 计数器

@@ -29,7 +29,7 @@ def basd_info_add(insert_sql, update_sql_list):
 				fp.write(json.dumps(update_sql_list,ensure_ascii=False))
 			os.system('python3 update_basd.py > sql_check.txt')
 			print('update')
-			# print(update_sql_list)
+			print(update_sql_list)
 		except Exception as e:
 			export_log({"type":"updatesql","data":update_sql_list,"exception":str(e)})
 	# 存储
@@ -39,7 +39,7 @@ def basd_info_add(insert_sql, update_sql_list):
 				fp.write(insert_sql)
 			os.system('python3 insert_basd.py > sql_check.txt')
 			print('store')
-			# print(insert_sql)
+			print(insert_sql)
 		except Exception as e:
 			export_log({"type":"batch_insert_sql","data":insert_sql,"exception":str(e)})
 
@@ -77,7 +77,7 @@ def check_time(res,param_time):
 def sendPartition(iter):
 	print(update_keywords_fromtxt())
 	insert_sql = 'insert all '
-	delete_sql = ''
+	update_sql_list = []
 	check_ID_list = []
 	b = False
 	for record in iter:
@@ -147,7 +147,7 @@ def sendPartition(iter):
 			print(e)
 			export_log({"type":"Stitching pinjie sql","data":record[0]})
 	insert_sql += "select 1 from dual"
-	print(insert_sql)
+	# print(insert_sql)
 	if b:
 		basd_info_add(insert_sql, update_sql_list)
 	
