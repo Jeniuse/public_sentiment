@@ -24,6 +24,24 @@ class BaiduspiderPipeline(object):
         global producer
         # producer = KafkaProducer(bootstrap_servers=['172.16.54.139:6667'])
         producer = KafkaProducer(bootstrap_servers=['172.16.54.139:6667','172.16.54.140:6667','172.16.54.141:6667','172.16.54.148:6667'])
+        # 查询关键字
+        #取得关键字
+        os.environ['NLS_LANG'] = 'SIMPLIFIED CHINESE_CHINA.UTF8'
+        op =OrclPool()
+        sql = "select key_word from BASE_ANALYSIS_SENTIMENT where DICT_ENABLED_VALUE=300010000000001"
+        list1 = op.fetch_all(sql)
+        keylist = []
+        for node in list1:
+            temp1 = str(node).replace("'", '')
+            temp2 = temp1.replace("(" or ")", "")
+            temp3 = temp2.replace(")", "")
+            temp4 = temp3.split(",")
+            for key in temp4:
+                if key != '':
+                    keylist.append(key)
+        keylist = list(set(keylist))
+        with open('keywords.txt','w',encoding= 'utf8') as fp:
+            fp.write(json.dumps(keylist,ensure_ascii=False))
         # 自定义分词库---begin
         os.environ['NLS_LANG'] = 'SIMPLIFIED CHINESE_CHINA.UTF8'
         op = OrclPool()
