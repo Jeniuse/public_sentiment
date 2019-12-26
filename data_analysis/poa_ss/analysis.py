@@ -16,7 +16,7 @@ import py4j
 # 获取关键字
 def update_keywords_fromtxt():
 	keywords = {}
-	with open('../keywords.txt','r') as fp:
+	with open('../keywords.txt','r',encoding= 'utf8') as fp:
 		keywords = json.loads(fp.read())
 	return keywords
 
