@@ -7,7 +7,6 @@ import happybase
 from kafka import KafkaProducer   #引入包，如果你在自己的电脑上跑，得先安装kafka
 from oraclepool import OrclPool
 import jieba
-os.environ['NLS_LANG'] = 'SIMPLIFIED CHINESE_CHINA.UTF8'
 global producer
 class BaiduspiderPipeline(object):
     #打开hbase
@@ -26,6 +25,7 @@ class BaiduspiderPipeline(object):
         # producer = KafkaProducer(bootstrap_servers=['172.16.54.139:6667'])
         producer = KafkaProducer(bootstrap_servers=['172.16.54.139:6667','172.16.54.140:6667','172.16.54.141:6667','172.16.54.148:6667'])
         # 自定义分词库---begin
+        os.environ['NLS_LANG'] = 'SIMPLIFIED CHINESE_CHINA.UTF8'
         op = OrclPool()
         sql = 'select WORD from CONF_WORD'
         lex_list = op.fetch_all(sql)
