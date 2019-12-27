@@ -3,7 +3,7 @@ import os
 from oraclepool import OrclPool
 import json
 
-def update_keywords():
+def update_keywords_old():
 	keywords = {}
 	op = OrclPool()
 	sql = 'select * from BASE_ANALYSIS_SENTIMENT where DICT_ENABLED_VALUE=300010000000001'
@@ -20,6 +20,19 @@ def update_keywords():
 		for kw in kws:
 			kw = kw.lower()
 			keywords[kw] = key
+	return keywords
+
+def update_keywords():
+	keywords = []
+	op = OrclPool()
+	sql = 'select * from BASE_ANALYSIS_SENTIMENT where DICT_ENABLED_VALUE=300010000000001'
+	key_list = op.fetch_all(sql)
+	for ld in key_list:
+		key = {}
+		key['id'] = str(ld[0])
+		key['name'] = ld[1]
+		key['main_word'] = ld[2]
+		keywords.append(key)
 	return keywords
 
 keywords = update_keywords()

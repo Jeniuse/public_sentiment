@@ -23,7 +23,7 @@ def update_keywords_fromtxt():
 # 批量插入数据库
 def basd_info_add(insert_sql, update_sql_list):
 	# 更新
-	if update_sql_list!="":
+	if len(update_sql_list)!=0:
 		try:
 			with open('update_basd_sql.txt','w',encoding= 'utf8') as fp:
 				fp.write(json.dumps(update_sql_list,ensure_ascii=False))
@@ -103,51 +103,50 @@ def sendPartition(iter):
 			comment_size = 'null' if res['COMMENT_SIZE'] == None else str(res['COMMENT_SIZE'])
 			# 点赞量，如果无法爬取到，置空
 			thumbsup_size = 'null' if res['THUMBSUP_SIZE'] == None else str(res['THUMBSUP_SIZE'])
-			check_ID_list = record[2] # 获取重复ID
-			if len(check_ID_list)==0 : # 没有重复ID，新增
-				# 简介为空的情况
-				if res['INTRODUCTION'] != '':
-					res['TITLE'] = res['TITLE'].replace('\'','"')
-					res['INTRODUCTION'] = res['INTRODUCTION'].replace('\'','"')
-					sql_content = ",'"+res['TITLE']+"','"+res['INTRODUCTION']+"','"+res['URL']+"',"+occur_time+","+res['ORIGIN_VALUE']+",'"+res['ORIGIN_NAME']+"'"
-					sql_content += ","+browse_size+","+comment_size+","+thumbsup_size+","+fetch_time+","+last_update_time+") "
+			# 简介为空的情况
+			if res['INTRODUCTION'] != '':
+				res['TITLE'] = res['TITLE'].replace('\'','"')
+				res['INTRODUCTION'] = res['INTRODUCTION'].replace('\'','"')
+				sql_content = ",'"+res['TITLE']+"','"+res['INTRODUCTION']+"','"+res['URL']+"',"+occur_time+","+res['ORIGIN_VALUE']+",'"+res['ORIGIN_NAME']+"'"
+				sql_content += ","+browse_size+","+comment_size+","+thumbsup_size+","+fetch_time+","+last_update_time+") "
+			else:
+				if res['ORIGIN_VALUE'] == '500010000000002':
+					export_log({"type":"no INTRODUCTION","data":res})
 				else:
-					if res['ORIGIN_VALUE'] == '500010000000002':
-						export_log({"type":"no INTRODUCTION","data":res})
-					else:
-						export_log({"type":"no Reading permissions","data":res})
-				if sql_content != "":
-					# 拼接内容的sql，拼接关键字
-					sql_basd = ""
-					key_match = record[1]
-					# ('爬虫内容', [('2', '测试', '测试,test', '测试'), ('1', '户户通', '户户通,恶意,安装', '户户通')])
-					for km in key_match:
+					export_log({"type":"no Reading permissions","data":res})
+			key_match = record[1]
+			# 拼接内容的sql，拼接关键字
+			sql_basd = ""
+			for km in key_match: #遍历匹配列表
+				check_ID_list = km[-1] # 获取重复ID列表
+				if len(check_ID_list)==0 : # 没有重复ID，新增
+					if sql_content != "":
+						# ('爬虫内容', [('2', '测试', '测试,test', '测试'), ('1', '户户通', '户户通,恶意,安装', '户户通')])
 						sql_basd += "into BASE_ANALYSIS_SENTIMENT_DETAIL(PID,NAME,MAIN_WORD,key_WORD,TITLE,INTRODUCTION,URL,OCCUR_TIME,ORIGIN_VALUE,ORIGIN_NAME,BROWSE_SIZE,COMMENT_SIZE,THUMBSUP_SIZE,FETCH_TIME,LAST_UPDATE_TIME) "
 						sql_basd += "values("+str(km[0])+",'"+km[1]+"','"+km[2]+"','"+km[3]+"'"
 						sql_basd += sql_content
-					insert_sql += sql_basd
-			else: # 有重复数据，更新
-				for basdID in check_ID_list:
-					res['TITLE'] = res['TITLE'].replace('\'','"')
-					res['INTRODUCTION'] = res['INTRODUCTION'].replace('\'','"')
-					update_content = "" # 更新内容部分的sql
-					update_content += "update BASE_ANALYSIS_SENTIMENT_DETAIL "
-					update_content += "set TITLE='"+res['TITLE']+"',"
-					if res['INTRODUCTION'] != '':
-						update_content += "INTRODUCTION='"+res['INTRODUCTION']+"',"
-					update_content += "OCCUR_TIME="+occur_time+","
-					update_content += "BROWSE_SIZE="+browse_size+","
-					update_content += "COMMENT_SIZE="+comment_size+","
-					update_content += "THUMBSUP_SIZE="+thumbsup_size+","
-					update_content += "FETCH_TIME="+fetch_time+","
-					update_content += "LAST_UPDATE_TIME="+last_update_time+" "
-					update_content += "where ID="+basdID
-					update_sql_list.append(update_content)
+				else: # 有重复数据，更新
+					for basdID in check_ID_list:
+						res['TITLE'] = res['TITLE'].replace('\'','"')
+						res['INTRODUCTION'] = res['INTRODUCTION'].replace('\'','"')
+						update_content = "" # 更新内容部分的sql
+						update_content += "update BASE_ANALYSIS_SENTIMENT_DETAIL "
+						update_content += "set TITLE='"+res['TITLE']+"' "
+						if res['INTRODUCTION'] != '':
+							update_content += "INTRODUCTION='"+res['INTRODUCTION']+"' "
+						update_content += "OCCUR_TIME="+occur_time+" "
+						update_content += "BROWSE_SIZE="+browse_size+" "
+						update_content += "COMMENT_SIZE="+comment_size+" "
+						update_content += "THUMBSUP_SIZE="+thumbsup_size+" "
+						update_content += "FETCH_TIME="+fetch_time+" "
+						update_content += "LAST_UPDATE_TIME="+last_update_time+" "
+						update_content += "where ID="+basdID
+						update_sql_list.append(update_content)
+			insert_sql += sql_basd
 		except Exception as e:
 			print(e)
 			export_log({"type":"Stitching pinjie sql","data":record[0]})
 	insert_sql += "select 1 from dual"
-	# print(insert_sql)
 	if b:
 		basd_info_add(insert_sql, update_sql_list)
 	
@@ -164,31 +163,29 @@ def ayls_sentence(sentence):
 	keywords = update_keywords_fromtxt()
 	res = json.loads(sentence[1])
 	http_url = res['URL']
-	# 获取重复ID
-	check_ID_list = check_sentence(http_url)
+	# 获取重复ID和PID
+	check_IDPID_list = check_sentence(http_url)
+	len_cipl = len(check_IDPID_list)
 	# 获取分词列表
 	conf_word = res['CONF_WORD'].lower().split('$$')
 	participle = set(conf_word) # 去重
-	res_match = participle.intersection(set(keywords.keys())) # 交集操作
-	if len(res_match) == 0:
+	key_match = []
+	for keyword in keywords:
+		check_ID_list = []
+		key_list = keyword['main_word'].split(',')
+		res_match = participle.intersection(key_list) # 交集操作
+		if len(res_match) == len(key_list):
+			for check_IDPID in check_IDPID_list:
+				if keyword['id']==check_IDPID[1]:
+					check_ID_list.append(check_IDPID[0])
+			if len_cipl == 0:
+				key_match.append((keyword['id'],keyword['name'],keyword['main_word'],keyword['main_word'],[]))
+			else:
+				key_match.append((keyword['id'],keyword['name'],keyword['main_word'],keyword['main_word'],check_ID_list))	
+	if len(key_match) == 0:
 		return (sentence[1],0)
 	else:
-		# 去除同一id的集合元素，每个id包含的关键字中只保留一个
-		id_list = []
-		repeat_list = []
-		for rm in res_match:
-			kid = keywords[rm]['id']
-			if kid in id_list:
-				repeat_list.append(rm)
-			else:
-				id_list.append(kid)
-		# 集合差运算
-		res_match = res_match.difference(set(repeat_list))
-		key_match = []
-		for kw in res_match:
-			vals = keywords.get(kw)
-			key_match.append((vals['id'],vals['name'],vals['main_word'],kw))
-		return (sentence[1],key_match,check_ID_list)
+		return (sentence[1],key_match)
 	# return (sentence,0)
 
 def filter_sentence(sentence):

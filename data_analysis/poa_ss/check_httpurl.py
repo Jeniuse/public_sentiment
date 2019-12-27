@@ -23,14 +23,14 @@ sql = ""
 def main(argv):
 	http_url = argv[1]
 	try:
-		sql = "select ID from BASE_ANALYSIS_SENTIMENT_DETAIL where URL='%s'"%http_url
+		sql = "select ID,PID from BASE_ANALYSIS_SENTIMENT_DETAIL where URL='%s'"%http_url
 		op = OrclPool()
 		res_check = op.fetch_all(sql)
 		check_httpurl = []
 		if len(res_check)==0:
 			check_httpurl = []
 		else:
-			check_httpurl = [str(rc[0]) for rc in res_check]
+			check_httpurl = [(str(rc[0]),str(rc[1])) for rc in res_check]
 			print(http_url)
 		with open('check_httpurl.txt','w',encoding= 'utf8') as fp:
 			fp.write(json.dumps(check_httpurl,ensure_ascii=False))
