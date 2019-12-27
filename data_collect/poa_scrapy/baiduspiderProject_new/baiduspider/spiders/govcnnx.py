@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import scrapy
 import time
+import json
 from baiduspider.items import BaiduspiderItem
 from baiduspider.items import inititem
 from .. import TimeMarch
@@ -15,10 +16,8 @@ class hhtcsSpider(scrapy.Spider):
         "http://gdj.nx.gov.cn/nzcms_list_so.asp?keyword=%B7%F6%C6%B6%B9%A4%B3%CC&so=1&Submit2=%CB%D1%CB%F7%D2%BB%CF%C2" #扶贫工程
     ]
     allowed_timesup = 10  # 最多超过时限次数
-    if(read_json.read_json(name)):
-        default_scope_day = 60 #首次爬取时限
-    else:
-        default_scope_day = 30 #增量爬取时限
+    default_scope_day = 60 #首次爬取时限
+
 
     def parse(self, response):
         nodelist = response.xpath("//table/tr")#得到一页中的所有帖子
@@ -56,6 +55,7 @@ class hhtcsSpider(scrapy.Spider):
         item['IsFilter'] = False
         try:
             item['spidertime'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
+            item['source'] = ['网站', '500010000000004']
             item["title"] = response.xpath("//tr/td/font/text()").extract_first()
             item["url"] = response.url
             item["urlId"] = item["url"].split('id=')[1]
