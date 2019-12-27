@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import scrapy
 import time
+import json
 from baiduspider.items import BaiduspiderItem
 from baiduspider.items import inititem
 from .. import TimeMarch
@@ -10,16 +11,16 @@ from .. import read_json
 class hhtcsSpider(scrapy.Spider):
     name = 'govcnln'
     allowed_domains = ['gdj.ln.gov.cn']
-    start_urls = [
-        "http://www.ln.gov.cn/was5/web/search?page=1&channelid=267336&searchword=%s&perpage=10&outlinepage=10&searchscope=doctitle&timescope=&timescopecolumn=&orderby=&andsen=&total=&orsen=&exclude="%"卫星",   #直播卫星
-        "http://www.ln.gov.cn/was5/web/search?page=1&channelid=267336&searchword=%s&perpage=10&outlinepage=10&searchscope=doctitle&timescope=&timescopecolumn=&orderby=&andsen=&total=&orsen=&exclude="%"中星九号",   #中星九号
-        "http://www.ln.gov.cn/was5/web/search?page=1&channelid=267336&searchword=%s&perpage=10&outlinepage=10&searchscope=doctitle&timescope=&timescopecolumn=&orderby=&andsen=&total=&orsen=&exclude="%"扶贫工程"
-    ]
+    with open('../keywords.txt', 'r', encoding='utf8') as fp:
+        keywords = json.loads(fp.read())
+    start_urls = []
+    for keyword in keywords:
+        start_urls.append('http://www.ln.gov.cn/was5/web/search?page=1&channelid=267336&searchword=%s&perpage=10&outlinepage=10&searchscope=doctitle&timescope=&timescopecolumn=&orderby=&andsen=&total=&orsen=&exclude='%keyword)
+
+
     allowed_timesup = 10  # 最多超过时限次数
-    if(read_json.read_json(name)):
-        default_scope_day = 60 #首次爬取时限
-    else:
-        default_scope_day = 30 #增量爬取时限
+    default_scope_day = 60 #首次爬取时限
+
 
     def parse(self, response):
         nodelist = response.xpath("//div[@class = 'search-news-mod']")#得到一页中的所有帖子
@@ -32,6 +33,7 @@ class hhtcsSpider(scrapy.Spider):
         for node in nodelist:#分析帖子信息
             try:
                 item['spidertime'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
+                item['source'] = ['网站', '500010000000004']
                 item["title"] = node.xpath("./h1/a/text()").extract_first()
                 item["url"] = node.xpath("./h1/a/@href").extract_first()
                 item["urlId"] = item["url"].split('.')[0].split('/')[-1]

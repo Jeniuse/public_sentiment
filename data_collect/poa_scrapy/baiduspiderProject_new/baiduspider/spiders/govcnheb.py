@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import scrapy
 import time
+import json
 from baiduspider.items import BaiduspiderItem
 from baiduspider.items import inititem
 from .. import TimeMarch
@@ -9,17 +10,16 @@ from .. import read_json
 # 河北省广播电视局
 class hhtcsSpider(scrapy.Spider):
     name = 'govcnheb'
-    allowed_domains = ['www.hbcbgd.gov.cn']
-    start_urls = [
-        "http://www.hbcbgd.gov.cn/?do=search_contents&name=%s&page=1"%"直播卫星",
-        "http://www.hbcbgd.gov.cn/?do=search_contents&name=%s&page=1"%"中星九号",
-        "http://www.hbcbgd.gov.cn/?do=search_contents&name=%s&page=1"%"扶贫工程"
-    ]
+    allowed_domains = ['old.hbcbgd.gov.cn']
+    with open('../keywords.txt', 'r', encoding='utf8') as fp:
+        keywords = json.loads(fp.read())
+    start_urls = []
+    for keyword in keywords:
+        start_urls.append('http://old.hbcbgd.gov.cn/?do=search_contents&name=%s&page=1'%keyword)
+
     allowed_timesup = 10  # 最多超过时限次数
-    if(read_json.read_json(name)):
-        default_scope_day = 60 #首次爬取时限
-    else:
-        default_scope_day = 30 #增量爬取时限
+    default_scope_day = 60 #首次爬取时限
+
 
     def parse(self, response):
         nodelist = response.xpath("//div[@class='content']/table/tr/td//table/tr/td/a")#得到一页中的所有帖子
@@ -32,7 +32,7 @@ class hhtcsSpider(scrapy.Spider):
         for node in nodelist:#分析帖子信息
             try:
                 item['spidertime'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
-                item['spidertime'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
+                item['source'] = ['网站', '500010000000004']
                 item["title"] = node.xpath("./text()").extract_first()
                 item["url"] = node.xpath("./@href").extract_first()
                 item["url"] = 'http://www.hbcbgd.gov.cn%s'%item["url"]

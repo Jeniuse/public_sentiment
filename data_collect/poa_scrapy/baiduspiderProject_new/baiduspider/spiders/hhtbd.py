@@ -14,10 +14,7 @@ class hhtcsSpider(scrapy.Spider):
         "http://www.huhutong315.com/dz_beidougaoqing/"
     ]
     allowed_timesup = 10  # 最多超过时限次数
-    if(read_json.read_json(name)):
-        default_scope_day = 60 #首次爬取时限
-    else:
-        default_scope_day = 30 #增量爬取时限
+    default_scope_day = 60 #首次爬取时限
 
     def parse(self, response):
         nodelist = response.xpath("//dl[@class = 'bbda cl']")#得到一页中的所有帖子
@@ -29,6 +26,7 @@ class hhtcsSpider(scrapy.Spider):
         timecount = 0  # 计数器
         for node in nodelist:#分析帖子信息
             item['spidertime'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
+            item['source'] = ['论坛', '500010000000001']
             item["title"] = node.xpath("./dt/a/text()").extract_first()
             item["url"] = node.xpath("./dt/a/@href").extract_first()
             item["urlId"] = item["url"].split('/')[-1].split('.')[0]

@@ -12,15 +12,12 @@ class hhtcsSpider(scrapy.Spider):
     name = 'govcnshanx'
     allowed_domains = ['gdj.shaanxi.gov.cn']
     start_urls = [
-        "http://gdj.shaanxi.gov.cn/chaxunjieguo.jsp?wbtreeid=1001&searchScope=0&currentnum=1&keyword=55u05pKt5Y2r5pif",  #直播卫星
+        "http://gdj.shaanxi.gov.cn/chaxunjieguo.jsp?wbtreeid=1001&searchScope=0&currentnum=1&keyword=5oi35oi36YCa",  #直播卫星
         "http://gdj.shaanxi.gov.cn/chaxunjieguo.jsp?wbtreeid=1001&searchScope=0&currentnum=1&keyword=5Lit5pif5Lmd5Y%2B3",#中星九号
         "http://gdj.shaanxi.gov.cn/chaxunjieguo.jsp?wbtreeid=1001&searchScope=0&currentnum=1&keyword=5om26LSr&"           #扶贫工程
     ]
     allowed_timesup = 10  # 最多超过时限次数
-    if(read_json.read_json(name)):
-        default_scope_day = 60 #首次爬取时限
-    else:
-        default_scope_day = 30 #增量爬取时限
+    default_scope_day = 60 #首次爬取时限
 
     def parse(self, response):
         nodelist = response.xpath("//div[@class='xwd']")#得到一页中的所有帖子
@@ -33,6 +30,7 @@ class hhtcsSpider(scrapy.Spider):
         for node in nodelist:  # 分析帖子信息
             try:
                 item['spidertime'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
+                item['source'] = ['网站', '500010000000004']
                 item["url"] = node.xpath("./div[1]/a/@href").extract_first()
                 item["url"] = 'http://gdj.shaanxi.gov.cn/%s' % item["url"]
                 item["urlId"] = item["url"].split('/')[-1].split('.')[0]

@@ -4,6 +4,7 @@ import time
 from .. import read_json
 import datetime
 import os
+import json
 from baiduspider.items import BaiduspiderItem
 from ..child_page import child_page
 from .. import TimeCalculate
@@ -11,11 +12,14 @@ from .. import TimeMarch
 
 class SimpleBaiduSpider(scrapy.Spider):
     name = 'baidu'
-    keyword = '户户通'
     default_scope_day = 365  # 爬取时限(日)
     allowed_domains = ['tieba.baidu.com']
-    start_urls = ['https://tieba.baidu.com/f?kw=%s&ie=utf-8&pn=0'%keyword]
-    allowed_timesup = 10  # 最多超过时限次数
+    with open('../keywords.txt', 'r', encoding='utf8') as fp:
+        keywords = json.loads(fp.read())
+    start_urls = []
+    for keyword in keywords:
+        start_urls.append('https://tieba.baidu.com/f?kw=%s&ie=utf-8&pn=0'%keyword)
+    allowed_timesup = 20  # 最多超过时限次数
     default_scope_day = 60 #首次爬取时限
 
     def parse(self, response):
@@ -31,6 +35,7 @@ class SimpleBaiduSpider(scrapy.Spider):
         for doc in docs:
             try:
                 item['spidertime'] = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
+                item['source'] = ['论坛','500010000000001']
                 doc = doc.split("回复",1)[1]
                 item['read'] = None
                 item["comment"] = doc.split('>',1)[1].split('<',1)[0]

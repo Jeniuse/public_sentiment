@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import scrapy
 import time
+import json
 from baiduspider.items import BaiduspiderItem
 from baiduspider.items import inititem
 from .. import TimeMarch
@@ -10,16 +11,15 @@ from .. import read_json
 class hhtcsSpider(scrapy.Spider):
     name = 'govcnfj'
     allowed_domains = ['gdj.fujian.gov.cn']
-    start_urls = [
-        "http://gdj.fujian.gov.cn/was5/web/search?channelid=229105&templet=advsch.jsp&sortfield=-docreltime&classsql=%E7%9B%B4%E6%92%AD%E5%8D%AB%E6%98%9F*siteid%3D14&prepage=20&page=1",#"直播卫星",
-        "http://gdj.fujian.gov.cn/was5/web/search?channelid=229105&templet=advsch.jsp&sortfield=-docreltime&classsql=%E4%B8%AD%E6%98%9F%E4%B9%9D%E5%8F%B7*siteid%3D14&prepage=20&page=1",#"中星九号",
-        "http://gdj.fujian.gov.cn/was5/web/search?channelid=229105&templet=advsch.jsp&sortfield=-docreltime&classsql=%E6%89%B6%E8%B4%AB%E5%B7%A5%E7%A8%8B*siteid%3D14&prepage=20&page=1" #"扶贫工程"
-    ]
+    with open('../keywords.txt', 'r', encoding='utf8') as fp:
+        keywords = json.loads(fp.read())
+    start_urls = []
+    for keyword in keywords:
+        start_urls.append('http://gdj.fujian.gov.cn/was5/web/search?channelid=229105&templet=advsch.jsp&sortfield=-docreltime&classsql='+keyword+'*siteid%3D14&prepage=20&page=1')
+
     allowed_timesup = 10  # 最多超过时限次数
-    if(read_json.read_json(name)):
-        default_scope_day = 60 #首次爬取时限
-    else:
-        default_scope_day = 30 #增量爬取时限
+    default_scope_day = 60 #首次爬取时限
+
 
     def parse(self, response):
         html = response.text
@@ -32,6 +32,7 @@ class hhtcsSpider(scrapy.Spider):
         timecount = 0  # 计数器
         for doc in docs:
             item['spidertime'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
+            item['source'] = ['网站', '500010000000004']
             title = doc.split("\",")[0]
             doc = doc.split("\",", 1)[1].split('\"url\":\"')[1]
             url = doc.split("\",")[0]
@@ -56,7 +57,7 @@ class hhtcsSpider(scrapy.Spider):
             page_num = response.url.split('&page=')[1]
             print('\n第***********************************%s***********************************页\n' % page_num)
             page_num = int(page_num) + 1
-            NextPageUrl = "http://gdj.fujian.gov.cn/was5/web/search?channelid=229105&templet=advsch.jsp&sortfield=-docreltime&classsql=%s&prepage=20&page=%s" % (keyword, str(page_num))
+            NextPageUrl = 'http://gdj.fujian.gov.cn/was5/web/search?channelid=229105&templet=advsch.jsp&sortfield=-docreltime&classsql='+keyword+'*siteid%3D14&prepage=20&page='+str(page_num)
             print(NextPageUrl)
             yield scrapy.Request(NextPageUrl, callback=self.parse, dont_filter=True)
         else:

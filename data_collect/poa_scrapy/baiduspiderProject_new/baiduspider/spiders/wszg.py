@@ -21,10 +21,8 @@ class wszgcsSpider(scrapy.Spider):
     ]
     idlist = read_file.read_file(name)
     allowed_timesup = 10  # 最多超过时限次数
-    if (read_json.read_json(name)):
-        default_scope_day = 50  # 首次爬取时限
-    else:
-        default_scope_day = 30  # 增量爬取时限
+    default_scope_day = 60  # 首次爬取时限
+
 
     def parse(self, response):
         nodelist = response.xpath('//tbody/tr')#得到一页中的所有帖子
@@ -36,6 +34,7 @@ class wszgcsSpider(scrapy.Spider):
         for node in nodelist:#分析帖子信息
             #首判断是否符合时间限制
             item['spidertime'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
+            item['source'] = ['论坛', '500010000000001']
             item["time"] = node.xpath('./th/a[2]/../../td[2]/em//text()').extract_first()
             # 处理时间为空的情况
             if item["time"] == None:

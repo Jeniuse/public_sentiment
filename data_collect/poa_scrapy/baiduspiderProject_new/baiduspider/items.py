@@ -32,6 +32,8 @@ class BaiduspiderItem(scrapy.Item):
     spidertime = scrapy.Field()
     # 最新评论时间
     latestcomtime = scrapy.Field()
+    # 来源
+    source = scrapy.Field()
 
 def inititem(item):
     item['title'] = None
@@ -45,6 +47,7 @@ def inititem(item):
     item['like'] = None
     item['spidertime'] = None
     item['latestcomtime'] = None
+    item['source'] = None
     return item
 
 

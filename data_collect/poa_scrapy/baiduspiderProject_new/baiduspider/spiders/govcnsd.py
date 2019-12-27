@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import scrapy
 import time
+import json
 from baiduspider.items import BaiduspiderItem
 from baiduspider.items import inititem
 from .. import TimeMarch
@@ -10,16 +11,15 @@ from .. import read_json
 class hhtcsSpider(scrapy.Spider):
     name = 'govcnsd'
     allowed_domains = ['gd.shandong.gov.cn']
-    start_urls = [
-        "http://gd.shandong.gov.cn/gentleCMS/cmssearch/search.do?siteId=224c56cd-948a-4ac8-95bf-a44822be2f09&content=%s&currentpage=1"%"直播卫星",
-        "http://gd.shandong.gov.cn/gentleCMS/cmssearch/search.do?siteId=224c56cd-948a-4ac8-95bf-a44822be2f09&content=%s&currentpage=1"%"中星九号",
-        "http://gd.shandong.gov.cn/gentleCMS/cmssearch/search.do?siteId=224c56cd-948a-4ac8-95bf-a44822be2f09&content=%s&currentpage=1"%"扶贫工程"
-    ]
+    with open('../keywords.txt', 'r', encoding='utf8') as fp:
+        keywords = json.loads(fp.read())
+    start_urls = []
+    for keyword in keywords:
+        start_urls.append('http://gd.shandong.gov.cn/gentleCMS/cmssearch/search.do?siteId=224c56cd-948a-4ac8-95bf-a44822be2f09&content=%s&currentpage=1'%keyword)
+
     allowed_timesup = 10  # 最多超过时限次数
-    if(read_json.read_json(name)):
-        default_scope_day = 60 #首次爬取时限
-    else:
-        default_scope_day = 30 #增量爬取时限
+    default_scope_day = 60 #首次爬取时限
+
 
     def parse(self, response):
         nodelist = response.xpath("//div[@align='left']")#得到一页中的所有帖子
@@ -33,6 +33,7 @@ class hhtcsSpider(scrapy.Spider):
         for node in nodelist:#分析帖子信息
             try:
                 item['spidertime'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
+                item['source'] = ['网站', '500010000000004']
                 item["url"] = node.xpath("./a[1]/@href").extract_first()
                 item["url"] = 'http://gd.shandong.gov.cn%s'%item["url"]
                 item["urlId"] = item["url"].split('articles/')[-1].split('/')[0]
@@ -42,7 +43,8 @@ class hhtcsSpider(scrapy.Spider):
                 # item["time"] = time.strftime("%Y-%m-%d", time.strptime(item["time"].split(' ')[0], "%Y年%m月%d日"))
                 # 判断这个帖子是否符合时间
                 if TimeMarch.time_March(item["time"],self.default_scope_day):
-                    item["IsFilter"] = True
+                    if item["time"].split('-')[0] in ['2019','2020']:
+                        item["IsFilter"] = True
                 else:
                     item["IsFilter"] = False
                     timecount = timecount + 1

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import scrapy
 import time
+import json
 from baiduspider.items import BaiduspiderItem
 from baiduspider.items import inititem
 from .. import TimeMarch
@@ -10,19 +11,17 @@ from .. import read_json
 class hhtcsSpider(scrapy.Spider):
     name = 'govcnjl'
     allowed_domains = ['gdj.jl.gov.cn']
-    start_urls = [
-        "http://was.jl.gov.cn/was5/web/search?presearchword=&searchword1=&channelid=193132&StringEncoding=UTF-8&searchword=直播卫星&page=1",
-        "http://was.jl.gov.cn/was5/web/search?presearchword=&searchword1=&channelid=193132&StringEncoding=UTF-8&searchword=%s&page=1"%"中星九号",
-        "http://was.jl.gov.cn/was5/web/search?presearchword=&searchword1=&channelid=193132&StringEncoding=UTF-8&searchword=%s&page=1"%"扶贫工程"
-    ]
+    with open('../keywords.txt', 'r', encoding='utf8') as fp:
+        keywords = json.loads(fp.read())
+    start_urls = []
+    for keyword in keywords:
+        start_urls.append('http://was.jl.gov.cn/was5/web/search?presearchword=&searchword1=&channelid=193132&StringEncoding=UTF-8&searchword=%s&page=1'%keyword)
+
     allowed_timesup = 10  # 最多超过时限次数
-    if(read_json.read_json(name)):
-        default_scope_day = 60 #首次爬取时限
-    else:
-        default_scope_day = 30 #增量爬取时限
+    default_scope_day = 60 #首次爬取时限
+
 
     def parse(self, response):
-        print(response)
         nodelist = response.xpath("//td[@class = 'td_left30_right30']/table/tr/td")#得到一页中的所有帖子
         nodelist = [] if nodelist==None else nodelist
         item = BaiduspiderItem()
@@ -33,6 +32,7 @@ class hhtcsSpider(scrapy.Spider):
         for node in nodelist:#分析帖子信息
             try:
                 item['spidertime'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
+                item['source'] = ['网站', '500010000000004']
                 item["title"] = node.xpath("./span[@class = 'blue14bold']/a/text()").extract_first()
                 item["url"] = node.xpath("./span[@class = 'blue14bold']/a/@href").extract_first()
                 item["urlId"] = item["url"].split('_')[-1].split('.')[0]
@@ -47,7 +47,7 @@ class hhtcsSpider(scrapy.Spider):
                     item["IsFilter"] = False
                     timecount = timecount + 1
                 res_child = child_page(item["url"])
-                item["info"] = res_child.xpath("//div[@class='cas_content']/p/text() | //div[@class='Custom_UnionStyle']/p/text() | //div[@class='Custom_UnionStyle']/span/p/text() |//div[@class='TRS_Editor']/div/div/p/text() | //div[@class='Custom_UnionStyle']/div/span/text()")  # 格式不统一
+                item["info"] = res_child.xpath("//div[@class='cas_content']//p/text() | //div[@class='submain']//span/text()| //div[@class='Custom_UnionStyle']//p/text() | //div[@class='Custom_UnionStyle']//span/p/text() |//div[@class='TRS_Editor']//p/text() | //div[@class='Custom_UnionStyle']//span/text()")  # 格式不统一
                 item["info"] = "".join(item["info"])
             except:
                 item['IsFilter'] = False

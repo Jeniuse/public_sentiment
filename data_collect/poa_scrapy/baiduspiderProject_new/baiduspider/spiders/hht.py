@@ -20,10 +20,7 @@ class hhtcsSpider(scrapy.Spider):
         "http://www.huhutong315.com/forum-103-1.html"
     ]
     allowed_timesup = 10  # 最多超过时限次数
-    if(read_json.read_json(name)):
-        default_scope_day = 50 #首次爬取时限
-    else:
-        default_scope_day = 30 #增量爬取时限
+    default_scope_day = 60 #首次爬取时限
 
     def parse(self, response):
         nodelist = response.xpath('//tbody/tr')#得到一页中的所有帖子
@@ -34,6 +31,7 @@ class hhtcsSpider(scrapy.Spider):
         timecount = 0  # 计数器
         for node in nodelist:#分析帖子信息
             item['spidertime'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
+            item['source'] = ['论坛', '500010000000001']
             childUrl = node.xpath("./th/a[2][@class='s xst']/@href").extract_first()
             item["title"]= node.xpath("./th/a[2][@class='s xst']/text()").extract_first()
             item["url"] = node.xpath("./th/a[2][@class='s xst']/@href").extract_first()
@@ -52,8 +50,8 @@ class hhtcsSpider(scrapy.Spider):
                 item["time"] = item["time"].strip()
                 item["time"] = TimeCalculate.time_calculate(item["time"], self.name)
             # # 处理简介为空的情况
-            # if item["info"] == None:
-            #     item["info"] = ''
+            if item["info"] == None:
+                item["info"] = ''
             # 判断这个帖子是否符合时间
             if(TimeMarch.time_March(item["time"],self.default_scope_day)==True):
                 item["IsFilter"] = True

@@ -1,25 +1,26 @@
 # -*- coding: utf-8 -*-
 import scrapy
 import time
+import json
 from baiduspider.items import BaiduspiderItem
 from baiduspider.items import inititem
 from .. import TimeMarch
 from ..child_page import child_page
 from .. import read_json
 # 宁夏省广播电视局
+# 6分钟
 class hhtcsSpider(scrapy.Spider):
     name = 'govcnnx2'
     allowed_domains = ['gdj.nx.gov.cnn']
-    start_urls = [
-        "http://gdj.nx.gov.cn/was5/web/search?searchword=%s&channelid=244757&page=1"%"直播卫星",
-        "http://gdj.nx.gov.cn/was5/web/search?searchword=%s&channelid=244757&page=1"%"中星九号",
-        "http://gdj.nx.gov.cn/was5/web/search?searchword=%s&channelid=244757&page=1"%"扶贫工程"
-    ]
+    with open('../keywords.txt', 'r', encoding='utf8') as fp:
+        keywords = json.loads(fp.read())
+    start_urls = []
+    for keyword in keywords:
+        start_urls.append('http://gdj.nx.gov.cn/was5/web/search?searchword=%s&channelid=244757&page=1'%keyword)
+
     allowed_timesup = 10  # 最多超过时限次数
-    if(read_json.read_json(name)):
-        default_scope_day = 60 #首次爬取时限
-    else:
-        default_scope_day = 30 #增量爬取时限
+    default_scope_day = 60 #首次爬取时限
+
 
     def parse(self, response):
         nodelist = response.xpath("//div[@class='wr_body_type1 cont2']//li")#得到一页中的所有帖子
@@ -32,13 +33,14 @@ class hhtcsSpider(scrapy.Spider):
         for node in nodelist:#分析帖子信息
             try:
                 item['spidertime'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
+                item['source'] = ['网站', '500010000000004']
                 item["url"] = node.xpath("./a/@href").extract_first()
                 item["urlId"] = item["url"].split('_')[-1].split('.')[0]
                 item["urlId"] = '%s_%s' % (self.name, item["urlId"])
                 item["title"] = node.xpath("./a/text()").extract_first()
                 # item["time"] = time.strftime("%Y-%m-%d", time.strptime(item["time"].split(' ')[0], "%Y年%m月%d日"))
                 res_child = child_page(item["url"])
-                item["info"] = res_child.xpath("//div[@id = 'z']/p//span/text()")
+                item["info"] = res_child.xpath("//div[@id = 'z']/p//span/text() |//div[@id = 'z']//p/text()")
                 item["info"] = "".join(item["info"])
                 item["time"] = res_child.xpath("//td[@align='center']/span/text()")
                 item["time"] = "".join(item["time"])

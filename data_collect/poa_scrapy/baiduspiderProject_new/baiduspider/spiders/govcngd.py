@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import scrapy
 import time
+import json
 from baiduspider.items import BaiduspiderItem
 from baiduspider.items import inititem
 from .. import TimeMarch
@@ -14,41 +15,23 @@ class hhtcsSpider(scrapy.Spider):
     allowed_domains = ['gbdsj.gd.gov.cn/']
 
     allowed_timesup = 10  # 最多超过时限次数
-    if(read_json.read_json(name)):
-        default_scope_day = 60 #首次爬取时限
-    else:
-        default_scope_day = 30 #增量爬取时限
+    default_scope_day = 60 #首次爬取时限
 
     def start_requests(self):
         # 广东只能获取post数据，通过formrequest方式访问，取回的数据处理成字典自动获取
-        yield scrapy.FormRequest(
-            url='http://search.gd.gov.cn/api/search/all',
-            formdata={
-                'keywords': '直播卫星',
-                'page': '1',  # 这里不能给int类型的1，requests模块中可以
-                # 'time_from': '1537703217',
-                # 'time_to':'1569239217'
-            },
-        callback = self.parse
-        )
-        yield scrapy.FormRequest(
-            url='http://search.gd.gov.cn/api/search/all',
-            formdata={
-                'keywords': '扶贫工程',
-                'page': '1',
-                # 'time_from': '1537703853',
-                # 'time_to': '1569239853'
-            },
-            callback=self.parse
-        )
-        yield scrapy.FormRequest(
-            url='http://search.gd.gov.cn/api/search/all',
-            formdata={
-                'keywords': '中星九号',
-                'page': '1',
-            },
-            callback=self.parse
-        )
+        with open('../keywords.txt', 'r', encoding='utf8') as fp:
+            keywords = json.loads(fp.read())
+        for keyword in keywords:
+            yield scrapy.FormRequest(
+                url='http://search.gd.gov.cn/api/search/all',
+                formdata={
+                    'keywords': keyword,
+                    'page': '1',  # 这里不能给int类型的1，requests模块中可以
+                    # 'time_from': '1537703217',
+                    # 'time_to':'1569239217'
+                },
+                callback=self.parse
+            )
 
     def parse(self, response):
         html = str(response.text)
@@ -66,6 +49,7 @@ class hhtcsSpider(scrapy.Spider):
                 doc = '{' + doc + '}'
                 doc_dict = ast.literal_eval(doc)
                 item['spidertime'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
+                item['source'] = ['网站', '500010000000004']
                 item["title"] = str(doc_dict['title'])
                 item["title"] = item["title"].replace('<em>','')
                 item["title"] = item["title"].replace('</em>', '')
@@ -74,7 +58,7 @@ class hhtcsSpider(scrapy.Spider):
                 item["title"] = item["title"].replace(']', '')
                 item["url"] = str(doc_dict['url']).replace('\\','')
                 item["urlId"] = item["url"].split('post_')[-1].split('.')[0]
-                item["urlId"] = '%s_%s' % (self.name, id)
+                item["urlId"] = '%s_%s' % (self.name, item["urlId"])
                 item["time"] = doc_dict['pub_time']
                 info = str(doc_dict['content'])
                 if TimeMarch.time_March(item["time"], self.default_scope_day):

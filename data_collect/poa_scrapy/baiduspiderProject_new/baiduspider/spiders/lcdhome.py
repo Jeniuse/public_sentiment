@@ -18,10 +18,8 @@ class hhtcsSpider(scrapy.Spider):
     page_num = 1 # 页码
     page_all_num = 1
     allowed_timesup = 10  # 最多超过时限次数
-    if(read_json.read_json(name)):
-        default_scope_day = 60 #首次爬取时限
-    else:
-        default_scope_day = 30 #增量爬取时限
+    default_scope_day = 60 #首次爬取时限
+
 
     def parse(self, response):
         nodelist = response.xpath("//tbody/tr[@class='tr3']")#得到一页中的所有帖子
@@ -35,6 +33,7 @@ class hhtcsSpider(scrapy.Spider):
         timecount = 0  # 计数器
         for node in nodelist:#分析帖子信息
             item['spidertime'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
+            item['source'] = ['论坛', '500010000000001']
             item["title"] = node.xpath("./td[@class='subject']/a/b/font/text() | ./td[@class='subject']/a/text()").extract_first()
             item["url"] = node.xpath("./td[@class='subject']/a/@href").extract_first()
             item["urlId"] = item["url"].split('-')[-1].split('.')[0]
@@ -48,7 +47,7 @@ class hhtcsSpider(scrapy.Spider):
             if item["read"] == "\xa0":
                 item["read"] = None
             try:
-                reply = int(node.xpath("./td[@class='num']/text()").extract_first()[1:])
+                reply = int(item["read"])
             except:
                 reply = 0
             try:

@@ -16,10 +16,7 @@ class hhtcsSpider(scrapy.Spider):
         "http://gdj.qinghai.gov.cn/index/xw/index_5.html"  #扶贫"
     ]
     allowed_timesup = 10  # 最多超过时限次数
-    if(read_json.read_json(name)):
-        default_scope_day = 60 #首次爬取时限
-    else:
-        default_scope_day = 30 #增量爬取时限
+    default_scope_day = 60 #首次爬取时限
 
     def parse(self, response):
         nodelist = response.xpath("//td[@class='ta']/table/tr")#得到一页中的所有帖子
@@ -32,6 +29,7 @@ class hhtcsSpider(scrapy.Spider):
         for node in nodelist:#分析帖子信息
             try:
                 item['spidertime'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
+                item['source'] = ['网站', '500010000000004']
                 item["title"] = node.xpath("./td[2]/a/text()").extract_first()
                 item["url"] = node.xpath("./td[2]/a/@href").extract_first()
                 item["url"] = 'http://gdj.qinghai.gov.cn/%s'%item["url"]

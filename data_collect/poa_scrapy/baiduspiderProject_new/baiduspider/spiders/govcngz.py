@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import scrapy
 import time
+import json
 from baiduspider.items import BaiduspiderItem
 from baiduspider.items import inititem
 from .. import TimeMarch
@@ -10,19 +11,15 @@ from .. import read_json
 class hhtcsSpider(scrapy.Spider):
     name = 'govcngz'
     allowed_domains = ['gbdsj.guizhou.gov.cn']
-    start_urls = [
-        "http://gbdsj.guizhou.gov.cn/57/front/search.jhtml?code=c10a0a56f987453cb15e6a1fe45f7b8&keyword=直播卫星&pageNumber=1&filterParam=typename%3A1%3BsiteName%3A50&timeScope=+&orderBy=time&_=1569230227733",   #"直播卫星",
-        "http://gbdsj.guizhou.gov.cn/57/front/search.jhtml?code=c10a0a56f987453cb15e6a1fe45f7b8&keyword=中星九号&pageNumber=1&filterParam=typename%3A1%3BsiteName%3A50&timeScope=+&orderBy=time&_=1569230227733",   #'中星九号",
-        "http://gbdsj.guizhou.gov.cn/57/front/search.jhtml?code=c10a0a56f987453cb15e6a1fe45f7b8&keyword=扶贫工程&pageNumber=1&filterParam=typename%3A1%3BsiteName%3A50&timeScope=+&orderBy=time&_=1569230227733",   #"扶贫工程"
-        "http://gbdsj.guizhou.gov.cn/57/front/search.jhtml?code=c10a0a56f987453cb15e6a1fe45f7b8&keyword=直播卫星&pageNumber=1&filterParam=typename%3A2%3BsiteName%3A50&timeScope=+&orderBy=time&_=1569230227736",
-        "http://gbdsj.guizhou.gov.cn/57/front/search.jhtml?code=c10a0a56f987453cb15e6a1fe45f7b8&keyword=中星九号&pageNumber=1&filterParam=typename%3A2%3BsiteName%3A50&timeScope=+&orderBy=time&_=1569230227736",
-        "http://gbdsj.guizhou.gov.cn/57/front/search.jhtml?code=c10a0a56f987453cb15e6a1fe45f7b8&keyword=扶贫工程&pageNumber=1&filterParam=typename%3A2%3BsiteName%3A50&timeScope=+&orderBy=time&_=1569230227736"
-    ]
+    with open('../keywords.txt', 'r', encoding='utf8') as fp:
+        keywords = json.loads(fp.read())
+    start_urls = []
+    for keyword in keywords:
+        start_urls.append('http://gbdsj.guizhou.gov.cn/search.html?keyword=%s'%keyword)
+
     allowed_timesup = 10  # 最多超过时限次数
-    if(read_json.read_json(name)):
-        default_scope_day = 60 #首次爬取时限
-    else:
-        default_scope_day = 30 #增量爬取时限
+    default_scope_day = 60 #首次爬取时限
+
 
     def parse(self, response):
         html = response.text
@@ -35,6 +32,7 @@ class hhtcsSpider(scrapy.Spider):
         timecount = 0  # 计数器
         for doc in docs:
             item['spidertime'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
+            item['source'] = ['网站', '500010000000004']
             url = doc.split(':\"', 1)[1].split('\"', 1)[0]
             doc = doc.split("DOCPUBTIME", 1)[1]
             creattime = doc.split(':\"',1)[1].split('\"',1)[0]
