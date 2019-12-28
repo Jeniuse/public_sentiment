@@ -108,8 +108,8 @@ class BaiduspiderPipeline(object):
             pstmt['URL']=item['url']
             pstmt['INTRODUCTION']=item['info'][:350]
             pstmt['OCCUR_TIME']=item['time']
-            pstmt['ORIGIN_VALUE']='500010000000001'
-            pstmt['ORIGIN_NAME']='论坛'
+            pstmt['ORIGIN_VALUE']=item['source'][1]
+            pstmt['ORIGIN_NAME']=item['source'][0]
             pstmt['BROWSE_SIZE']=item['read']
             pstmt['COMMENT_SIZE']=item['comment']
             pstmt['FETCH_TIME']=item['spidertime']
