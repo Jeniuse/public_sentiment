@@ -32,6 +32,7 @@ class SimpleBaiduSpider(scrapy.Spider):
         item["IsFilter"] = False
         isHasContent = False  # 判断此页中是否有合适的信息
         NextPageUrl = ''
+        page_num=0
         for doc in docs:
             try:
                 item['spidertime'] = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
@@ -93,10 +94,9 @@ class SimpleBaiduSpider(scrapy.Spider):
             yield item  # 返回数据到pipeline
         if (len(docs) != 0) and (timecount < self.allowed_timesup):
             keyword = response.url.split('kw=')[1].split('&')[0]
-            page_num = response.url.split('&pn=')[1]
-            page_num = int(page_num)/50 + 1
+            page_num += 1
             print('\n第***********************************%s***********************************页\n' % str(page_num))
-            page_num = int(page_num) * 50
+            page_num = page_num * 50
             NextPageUrl = 'https://tieba.baidu.com/f?kw=%s&ie=utf-8&pn=%s' % (keyword, str(page_num))
             print(NextPageUrl)
             yield scrapy.Request(NextPageUrl, callback=self.parse, dont_filter=True)
