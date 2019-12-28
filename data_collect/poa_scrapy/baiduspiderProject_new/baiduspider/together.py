@@ -76,7 +76,7 @@ def hbspider():
     os.system("scrapy crawl govcnhub")
     time.sleep(1)
     os.system("scrapy crawl govcnnx")
-    time.sleep(1)
+    time.sleep(200)
 
 def run1():
     while(True):
