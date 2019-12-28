@@ -131,14 +131,14 @@ def sendPartition(iter):
 						res['INTRODUCTION'] = res['INTRODUCTION'].replace('\'','"')
 						update_content = "" # 更新内容部分的sql
 						update_content += "update BASE_ANALYSIS_SENTIMENT_DETAIL "
-						update_content += "set TITLE='"+res['TITLE']+"' "
+						update_content += "set TITLE='"+res['TITLE']+"',"
 						if res['INTRODUCTION'] != '':
-							update_content += "INTRODUCTION='"+res['INTRODUCTION']+"' "
-						update_content += "OCCUR_TIME="+occur_time+" "
-						update_content += "BROWSE_SIZE="+browse_size+" "
-						update_content += "COMMENT_SIZE="+comment_size+" "
-						update_content += "THUMBSUP_SIZE="+thumbsup_size+" "
-						update_content += "FETCH_TIME="+fetch_time+" "
+							update_content += "INTRODUCTION='"+res['INTRODUCTION']+"',"
+						update_content += "OCCUR_TIME="+occur_time+","
+						update_content += "BROWSE_SIZE="+browse_size+","
+						update_content += "COMMENT_SIZE="+comment_size+","
+						update_content += "THUMBSUP_SIZE="+thumbsup_size+","
+						update_content += "FETCH_TIME="+fetch_time+","
 						update_content += "LAST_UPDATE_TIME="+last_update_time+" "
 						update_content += "where ID="+basdID
 						update_sql_list.append(update_content)
