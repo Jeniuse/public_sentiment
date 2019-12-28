@@ -23,7 +23,7 @@ class hhtcsSpider(scrapy.Spider):
     default_scope_day = 60 #首次爬取时限
 
     def parse(self, response):
-        with open('../keywords.txt', 'r', encoding='utf8') as fp:
+        with open('./keywords.txt', 'r', encoding='utf8') as fp:
             keywords = json.loads(fp.read())
         start_urls = []
         for keyword in keywords:
