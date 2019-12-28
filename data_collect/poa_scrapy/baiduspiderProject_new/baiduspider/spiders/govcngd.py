@@ -19,7 +19,7 @@ class hhtcsSpider(scrapy.Spider):
 
     def start_requests(self):
         # 广东只能获取post数据，通过formrequest方式访问，取回的数据处理成字典自动获取
-        with open('../keywords.txt', 'r', encoding='utf8') as fp:
+        with open('./keywords.txt', 'r', encoding='utf8') as fp:
             keywords = json.loads(fp.read())
         for keyword in keywords:
             yield scrapy.FormRequest(

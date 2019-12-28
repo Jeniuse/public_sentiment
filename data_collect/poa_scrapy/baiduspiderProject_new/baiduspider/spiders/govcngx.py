@@ -18,7 +18,7 @@ class hhtcsSpider(scrapy.Spider):
     default_scope_day = 60 #首次爬取时限
 
     def parse(self, response):
-        with open('../keywords.txt', 'r', encoding='utf8') as fp:
+        with open('./keywords.txt', 'r', encoding='utf8') as fp:
             keywords = json.loads(fp.read())
         nodelist = response.xpath("//ul[@class='search_list']/li")#得到一页中的所有帖子
         nodelist = [] if nodelist==None else nodelist

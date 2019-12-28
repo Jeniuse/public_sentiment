@@ -14,7 +14,7 @@ class SimpleBaiduSpider(scrapy.Spider):
     name = 'baidu'
     default_scope_day = 365  # 爬取时限(日)
     allowed_domains = ['tieba.baidu.com']
-    with open('../keywords.txt', 'r', encoding='utf8') as fp:
+    with open('./keywords.txt', 'r', encoding='utf8') as fp:
         keywords = json.loads(fp.read())
     start_urls = []
     for keyword in keywords:

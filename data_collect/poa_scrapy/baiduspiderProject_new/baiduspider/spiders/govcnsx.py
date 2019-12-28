@@ -11,7 +11,7 @@ from .. import read_json
 class hhtcsSpider(scrapy.Spider):
     name = 'govcnsx'
     allowed_domains = ['gdj.shanxi.gov.cn']
-    with open('../keywords.txt', 'r', encoding='utf8') as fp:
+    with open('./keywords.txt', 'r', encoding='utf8') as fp:
         keywords = json.loads(fp.read())
     start_urls = []
     for keyword in keywords:
