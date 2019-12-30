@@ -42,6 +42,7 @@ class hhtcsSpider(scrapy.Spider):
                 res_child = child_page(item["url"])
                 item["info"] = res_child.xpath("//div[@id = 'z']/p//span/text() |//div[@id = 'z']//p/text()")
                 item["info"] = "".join(item["info"])
+                item["info"] = item["info"][0:2000]
                 item["time"] = res_child.xpath("//td[@align='center']/span/text()")
                 item["time"] = "".join(item["time"])
                 item["time"] = item["time"].split('：')[-1]

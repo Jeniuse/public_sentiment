@@ -35,7 +35,7 @@ class hhtcsSpider(scrapy.Spider):
                 item['source'] = ['网站', '500010000000004']
                 item["title"] = node.xpath("./text()").extract_first()
                 item["url"] = node.xpath("./@href").extract_first()
-                item["url"] = 'http://www.hbcbgd.gov.cn%s'%item["url"]
+                item["url"] = 'http://old.hbcbgd.gov.cn%s'%item["url"]
                 item["urlId"] = item["url"].split('/')[-1].split('.')[0]
                 item["urlId"] = '%s_%s' % (self.name, item["urlId"])
                 res_child = child_page(item["url"])
